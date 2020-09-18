@@ -1,6 +1,7 @@
 package io.andy.rocketmq.wrapper.core.consumer;
 
 import io.andy.rocketmq.wrapper.core.MQEndpoint;
+
 import io.andy.rocketmq.wrapper.core.config.Option;
 import io.andy.rocketmq.wrapper.core.config.Options;
 import io.andy.rocketmq.wrapper.core.consumer.listener.ConsumerConcurrentlyListener;
@@ -18,11 +19,12 @@ import java.util.Objects;
 
 @Slf4j
 public class RMConsumer implements MQEndpoint {
-    private final Options options = new Options();
     private String nameSrvAddr;
     private String consumerGroup;
     private String topic;
     private boolean orderly;
+
+    private Options options = new Options();
 
     private OrderlyMessageProcessor orderlyProcessor;
     private ConcurrentlyMessageProcessor concurrentlyProcessor;

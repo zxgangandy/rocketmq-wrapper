@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * @author Andy
- * @desc 支付完成消息消费监听回调实现
+ * @desc 顺序消息消费监听回调实现
  */
 @Slf4j
 
@@ -46,7 +46,7 @@ public class ConsumerOrderlyListener implements MessageListenerOrderly {
         String message = new String(msg.getBody());
         log.info("msgId={}, 消费者接收到消息, message={}", msgId, message);
 
-        return messageProcessor.process(msg);
+        return messageProcessor.process(msg, message);
     }
 
 }

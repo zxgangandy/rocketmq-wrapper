@@ -5,5 +5,5 @@ import org.apache.rocketmq.common.message.MessageExt;
 
 public interface OrderlyMessageProcessor {
 
-    ConsumeOrderlyStatus process(MessageExt msg);
+    ConsumeOrderlyStatus process(MessageExt rawMsg, String messageBody);
 }

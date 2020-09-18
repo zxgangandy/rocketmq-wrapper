@@ -29,13 +29,13 @@ public class RMProducer  implements MQEndpoint {
 
 
     @Override
-    public MQEndpoint start() {
+    public RMProducer start() {
         init();
         return this;
     }
 
     @Override
-    public <T> MQEndpoint config(Option<T> option, T value) {
+    public <T> RMProducer config(Option<T> option, T value) {
         return null;
     }
 
