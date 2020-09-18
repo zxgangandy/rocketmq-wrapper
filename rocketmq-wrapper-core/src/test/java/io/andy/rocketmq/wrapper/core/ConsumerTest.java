@@ -10,7 +10,7 @@ public class ConsumerTest {
 
     public static void main(String argv[]) {
         RMWrapper.with(RMConsumer.class)
-                .consumerGroup("test")
+                .consumerGroup("consumer-test")
                 .nameSrvAddr("127.0.0.1:9876")
                 .topic("test")
                 .concurrentlyMessageProcessor(new ConcurrentlyMessageProcessor() {

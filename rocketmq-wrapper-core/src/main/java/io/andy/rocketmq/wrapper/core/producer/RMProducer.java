@@ -20,12 +20,15 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class RMProducer  implements MQEndpoint {
+    private int                      retryTimes = 2;
     private String                   nameSrvAddr;
     private String                   producerGroup;
     private String                   topic;
     private ExecutorService          executorService;
     private TransactionMQProducer    transactionMQProducer;
     private TransactionListener      transactionListener;
+
+
 
 
     @Override
@@ -76,6 +79,11 @@ public class RMProducer  implements MQEndpoint {
         return this;
     }
 
+    public RMProducer retryTimes(int retryTimes) {
+        this.retryTimes = retryTimes;
+        return this;
+    }
+
     public SendResult sendMessage(Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         String msgBody = JSON.toJSONString(req);
         Message message = new Message(topic, msgBody.getBytes());
@@ -112,6 +120,7 @@ public class RMProducer  implements MQEndpoint {
         transactionMQProducer.setNamesrvAddr(nameSrvAddr);
         transactionMQProducer.setExecutorService(executorService);
         transactionMQProducer.setTransactionListener(transactionListener);
+        transactionMQProducer.setRetryTimesWhenSendFailed(retryTimes);
         //transactionMQProducer.setVipChannelEnabled(false);
         //transactionMQProducer.setSendMsgTimeout(10000);
         try {

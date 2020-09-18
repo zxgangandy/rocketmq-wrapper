@@ -10,7 +10,7 @@ public class ProducerTest {
 
     public static void main(String argv[]) {
         RMProducer producer = RMWrapper.with(RMProducer.class)
-                .producerGroup("test")
+                .producerGroup("producer-test")
                 .nameSrvAddr("127.0.0.1:9876")
                 .topic("test")
                 .transactionListener(new TransactionListener() {
