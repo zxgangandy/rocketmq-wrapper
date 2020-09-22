@@ -126,7 +126,7 @@ public class RMConsumer implements MQEndpoint {
             pushConsumer.start();
         } catch (MQClientException e) {
             log.error("[消息消费者]--RMConsumer加载异常!e={}", e);
-            throw new RuntimeException("[订单支付消息消费者]--OrderPaidConsumer加载异常!", e);
+            throw new IllegalStateException("[消息消费者]--RMConsumer加载异常!", e);
         }
 
         log.info("[消息消费者]--RMConsumer加载完成!");
