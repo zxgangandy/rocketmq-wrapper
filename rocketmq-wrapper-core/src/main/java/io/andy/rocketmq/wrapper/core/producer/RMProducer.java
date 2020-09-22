@@ -30,8 +30,6 @@ public class RMProducer  implements MQEndpoint {
     private TransactionListener      transactionListener;
 
 
-
-
     @Override
     public RMProducer start() {
         init();
@@ -50,10 +48,15 @@ public class RMProducer  implements MQEndpoint {
 
     @Override
     public void stop() {
-        executorService.shutdown();
-        transactionMQProducer.shutdown();
-        executorService = null;
-        transactionMQProducer = null;
+        if (executorService != null) {
+            executorService.shutdown();
+            executorService = null;
+        }
+
+        if (transactionMQProducer != null) {
+            transactionMQProducer.shutdown();
+            transactionMQProducer = null;
+        }
     }
 
     @Override
@@ -146,4 +149,6 @@ public class RMProducer  implements MQEndpoint {
         }
         log.info("启动[生产者]RMProducer, topic={}", topic);
     }
+
+
 }

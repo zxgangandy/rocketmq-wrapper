@@ -36,6 +36,7 @@ public class RMConsumer implements MQEndpoint {
     private OrderlyMessageProcessor orderlyProcessor;
     private ConcurrentlyMessageProcessor concurrentlyProcessor;
     private MessageModel messageModel = MessageModel.CLUSTERING;
+    private DefaultMQPushConsumer pushConsumer;
 
     @Override
     public RMConsumer start() {
@@ -57,7 +58,10 @@ public class RMConsumer implements MQEndpoint {
 
     @Override
     public void stop() {
-
+        if (pushConsumer != null) {
+            pushConsumer.shutdown();
+            pushConsumer = null;
+        }
     }
 
     @Override
@@ -107,7 +111,7 @@ public class RMConsumer implements MQEndpoint {
         Objects.requireNonNull(nameSrvAddr);
         Objects.requireNonNull(topic);
 
-        DefaultMQPushConsumer pushConsumer = new DefaultMQPushConsumer(consumerGroup);
+        pushConsumer = new DefaultMQPushConsumer(consumerGroup);
 
         pushConsumer.setNamesrvAddr(nameSrvAddr);
         pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
