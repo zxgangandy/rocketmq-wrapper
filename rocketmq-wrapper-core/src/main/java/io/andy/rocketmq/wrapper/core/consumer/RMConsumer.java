@@ -95,7 +95,7 @@ public class RMConsumer implements MQEndpoint {
         return this;
     }
 
-    private void init() {
+    private synchronized void init() {
         Objects.requireNonNull(consumerGroup);
         Objects.requireNonNull(nameSrvAddr);
         Objects.requireNonNull(topic);

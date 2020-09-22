@@ -106,13 +106,13 @@ public class RMProducer  implements MQEndpoint {
     /**
      *  同步发送事务消息到broker
      */
-    public SendResult sendTransactionMessage(Object req)  throws  MQClientException{
+    public SendResult sendTransactionMessage(Object req, Object arg)  throws  MQClientException{
         String msgBody = JSON.toJSONString(req);
         Message message = new Message(topic, msgBody.getBytes());
-        return transactionMQProducer.sendMessageInTransaction(message, req);
+        return transactionMQProducer.sendMessageInTransaction(message, arg);
     }
 
-    private void init() {
+    private synchronized void init() {
 
         Objects.requireNonNull(producerGroup);
         Objects.requireNonNull(nameSrvAddr);
