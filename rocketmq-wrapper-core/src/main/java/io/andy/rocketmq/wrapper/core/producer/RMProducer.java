@@ -59,12 +59,18 @@ public class RMProducer  implements MQEndpoint {
         }
     }
 
+    /**
+     *  生产者name server地址设置
+     */
     @Override
     public RMProducer nameSrvAddr(String nameSrvAddr) {
         this.nameSrvAddr = nameSrvAddr;
         return this;
     }
 
+    /**
+     *  生产者topic设置
+     */
     @Override
     public RMProducer topic(String topic) {
         this.topic = topic;
@@ -72,17 +78,26 @@ public class RMProducer  implements MQEndpoint {
         return this;
     }
 
+    /**
+     *  设置事务消息的监听器
+     */
     public RMProducer transactionListener(TransactionListener transactionListener) {
         this.transactionListener = transactionListener;
 
         return this;
     }
 
+    /**
+     *  生产者组设置
+     */
     public RMProducer producerGroup(String producerGroup) {
         this.producerGroup = producerGroup;
         return this;
     }
 
+    /**
+     *  生产者发送消息重试次数设置
+     */
     public RMProducer retryTimes(int retryTimes) {
         this.retryTimes = retryTimes;
         return this;
