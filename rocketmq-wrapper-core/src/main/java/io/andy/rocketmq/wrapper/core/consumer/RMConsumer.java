@@ -64,12 +64,18 @@ public class RMConsumer implements MQEndpoint {
         }
     }
 
+    /**
+     *  消费者name server设置
+     */
     @Override
     public RMConsumer nameSrvAddr(String nameSrvAddr) {
         this.nameSrvAddr = nameSrvAddr;
         return this;
     }
 
+    /**
+     *  消费者topic设置
+     */
     @Override
     public RMConsumer topic(String topic) {
         this.topic = topic;
@@ -77,29 +83,44 @@ public class RMConsumer implements MQEndpoint {
         return this;
     }
 
+    /**
+     *  消费者消费组设置
+     */
     public RMConsumer consumerGroup(String consumerGroup) {
         this.consumerGroup = consumerGroup;
         return this;
     }
 
+    /**
+     *  消费者是否是单序消息设置
+     */
     public RMConsumer orderly(boolean orderly) {
         this.orderly = orderly;
 
         return this;
     }
 
+    /**
+     *  消费者单序消息处理器设置
+     */
     public RMConsumer orderlyProcessor(OrderlyMessageProcessor orderlyProcessor) {
         this.orderlyProcessor = orderlyProcessor;
 
         return this;
     }
 
+    /**
+     *  消费者并发消息处理器设置
+     */
     public RMConsumer concurrentlyMessageProcessor(ConcurrentlyMessageProcessor concurrentlyProcessor) {
         this.concurrentlyProcessor = concurrentlyProcessor;
 
         return this;
     }
 
+    /**
+     *  消费者消息类型设置
+     */
     public RMConsumer messageModel(MessageModel messageModel) {
         this.messageModel = messageModel;
 
