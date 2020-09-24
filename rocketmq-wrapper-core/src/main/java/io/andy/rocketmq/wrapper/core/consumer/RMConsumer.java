@@ -37,7 +37,6 @@ public class RMConsumer extends AbstractMQEndpoint {
     private ConcurrentlyMessageProcessor   concurrentlyProcessor;
     private MessageModel                   messageModel = MessageModel.CLUSTERING;
     private DefaultMQPushConsumer          pushConsumer;
-    private Class<?>                       messageBodyClazz;
 
     @Override
     public RMConsumer start() {
@@ -128,14 +127,12 @@ public class RMConsumer extends AbstractMQEndpoint {
         return this;
     }
 
+    /**
+     *  消息转换器设置
+     */
     public RMConsumer messageConverter(MessageConverter messageConverter) {
         this.messageConverter = messageConverter;
 
-        return this;
-    }
-
-    public RMConsumer messageBodyClazz(Class<?> clazz) {
-        this.messageBodyClazz = clazz;
         return this;
     }
 
@@ -143,7 +140,6 @@ public class RMConsumer extends AbstractMQEndpoint {
         Objects.requireNonNull(consumerGroup);
         Objects.requireNonNull(nameSrvAddr);
         Objects.requireNonNull(topic);
-        Objects.requireNonNull(messageBodyClazz);
 
         pushConsumer = new DefaultMQPushConsumer(consumerGroup);
 
@@ -151,14 +147,16 @@ public class RMConsumer extends AbstractMQEndpoint {
         pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
         pushConsumer.setMessageModel(messageModel);
 
+        final MessageConverter messageConverter = getRequiredMessageConverter();
+
         if (orderly) {
             Objects.requireNonNull(orderlyProcessor);
             pushConsumer.registerMessageListener(
-                    new ConsumerOrderlyListener(orderlyProcessor, getRequiredMessageConverter()));
+                    new ConsumerOrderlyListener(orderlyProcessor, messageConverter));
         } else {
             Objects.requireNonNull(concurrentlyProcessor);
             pushConsumer.registerMessageListener(
-                    new ConsumerConcurrentlyListener(concurrentlyProcessor, getRequiredMessageConverter()));
+                    new ConsumerConcurrentlyListener(concurrentlyProcessor, messageConverter));
         }
 
         try {

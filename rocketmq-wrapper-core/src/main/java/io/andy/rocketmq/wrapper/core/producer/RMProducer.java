@@ -103,6 +103,9 @@ public class RMProducer  extends AbstractMQEndpoint {
         return this;
     }
 
+    /**
+     *  消息转换器设置
+     */
     public RMProducer messageConverter(MessageConverter messageConverter) {
         this.messageConverter = messageConverter;
         return this;
