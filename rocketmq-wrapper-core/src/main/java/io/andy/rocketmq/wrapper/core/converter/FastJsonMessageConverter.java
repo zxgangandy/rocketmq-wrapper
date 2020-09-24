@@ -13,9 +13,12 @@ public class FastJsonMessageConverter implements MessageConverter {
 
     @Override
     public Object fromMessageBody(byte[] msgBody, Class<?> clazz) throws MessageConversionException {
-
         if (msgBody != null) {
-            return JSON.parseObject(msgBody, clazz);
+            try {
+                return JSON.parseObject(msgBody, clazz);
+            } catch (Exception e) {
+                throw new MessageConversionException("failed to parse Message content", e);
+            }
         }
         return null;
     }
