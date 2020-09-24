@@ -2,6 +2,7 @@ package io.andy.rocketmq.wrapper.core.consumer.listener;
 
 
 import io.andy.rocketmq.wrapper.core.consumer.processor.ConcurrentlyMessageProcessor;
+import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -10,6 +11,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 
 import java.util.List;
 
+import static io.andy.rocketmq.wrapper.core.utils.ReflectUtils.getMessageType;
 
 /**
  * @author Andy
@@ -20,9 +22,13 @@ import java.util.List;
 public class ConsumerConcurrentlyListener implements MessageListenerConcurrently {
 
     private ConcurrentlyMessageProcessor messageProcessor;
+    private MessageConverter             messageConverter;
+    private Class<?>                     messageBodyClazz;
 
-    public ConsumerConcurrentlyListener(ConcurrentlyMessageProcessor messageProcessor) {
+    public ConsumerConcurrentlyListener(ConcurrentlyMessageProcessor messageProcessor, MessageConverter messageConverter) {
         this.messageProcessor = messageProcessor;
+        this.messageConverter = messageConverter;
+        this.messageBodyClazz = getMessageType(messageProcessor, 1);
     }
 
     @Override
@@ -45,10 +51,13 @@ public class ConsumerConcurrentlyListener implements MessageListenerConcurrently
      * 处理收到的消息
      */
     private ConsumeConcurrentlyStatus handleMessage(MessageExt msg, String msgId) {
-        String message = new String(msg.getBody());
+        Object message = messageConverter.fromMessageBody(msg.getBody(), messageBodyClazz);
         log.info("msgId={}, 消费者接收到消息, message={}", msgId, message);
 
         return messageProcessor.process(msg, message);
     }
+
+
+
 
 }

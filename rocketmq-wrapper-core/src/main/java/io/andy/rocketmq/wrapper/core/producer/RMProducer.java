@@ -1,8 +1,8 @@
 package io.andy.rocketmq.wrapper.core.producer;
 
-import com.alibaba.fastjson.JSON;
-import io.andy.rocketmq.wrapper.core.MQEndpoint;
+import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
 import io.andy.rocketmq.wrapper.core.config.Option;
+import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -20,15 +20,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class RMProducer  implements MQEndpoint {
-    private int                      retryTimes = 2;
-    private String                   nameSrvAddr;
-    private String                   producerGroup;
-    private String                   topic;
-    private ExecutorService          executorService;
-    private TransactionMQProducer    transactionMQProducer;
-    private TransactionListener      transactionListener;
+public class RMProducer  extends AbstractMQEndpoint {
+    private int                         retryTimes      = 2;
+    private String                      nameSrvAddr;
+    private String                      producerGroup;
+    private String                      topic;
 
+    private ExecutorService             executorService;
+    private TransactionMQProducer       transactionMQProducer;
+    private TransactionListener         transactionListener;
 
     @Override
     public RMProducer start() {
@@ -103,12 +103,17 @@ public class RMProducer  implements MQEndpoint {
         return this;
     }
 
+    public RMProducer messageConverter(MessageConverter messageConverter) {
+        this.messageConverter = messageConverter;
+        return this;
+    }
+
     /**
      *  同步发送消息到broker
      */
     public SendResult sendMessage(Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        String msgBody = JSON.toJSONString(req);
-        Message message = new Message(topic, msgBody.getBytes());
+        byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
+        Message message = new Message(topic, messageBody);
         return transactionMQProducer.send(message);
     }
 
@@ -116,8 +121,8 @@ public class RMProducer  implements MQEndpoint {
      *  异步发送消息到broker
      */
     public void sendMessageAsync(Object req, SendCallback sendCallback) throws InterruptedException, RemotingException, MQClientException {
-        String msgBody = JSON.toJSONString(req);
-        Message message = new Message(topic, msgBody.getBytes());
+        byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
+        Message message = new Message(topic, messageBody);
         transactionMQProducer.send(message, sendCallback);
     }
 
@@ -125,8 +130,8 @@ public class RMProducer  implements MQEndpoint {
      *  同步发送事务消息到broker
      */
     public SendResult sendTransactionMessage(Object req, Object arg)  throws  MQClientException{
-        String msgBody = JSON.toJSONString(req);
-        Message message = new Message(topic, msgBody.getBytes());
+        byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
+        Message message = new Message(topic, messageBody);
         return transactionMQProducer.sendMessageInTransaction(message, arg);
     }
 

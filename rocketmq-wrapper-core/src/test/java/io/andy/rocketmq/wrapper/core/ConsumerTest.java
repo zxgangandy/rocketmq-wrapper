@@ -13,7 +13,7 @@ public class ConsumerTest {
                 .consumerGroup("consumer-test")
                 .nameSrvAddr("127.0.0.1:9876")
                 .topic("test")
-                .concurrentlyMessageProcessor(new ConcurrentlyMessageProcessor() {
+                .concurrentlyMessageProcessor(new ConcurrentlyMessageProcessor<String>() {
                     @Override
                     public ConsumeConcurrentlyStatus process(MessageExt msg, String messageBody) {
                         System.out.println("messageBody=" + messageBody);

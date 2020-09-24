@@ -1,6 +1,6 @@
 package io.andy.rocketmq.wrapper.core.consumer;
 
-import io.andy.rocketmq.wrapper.core.MQEndpoint;
+import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
 
 import io.andy.rocketmq.wrapper.core.config.Option;
 import io.andy.rocketmq.wrapper.core.config.Options;
@@ -8,6 +8,7 @@ import io.andy.rocketmq.wrapper.core.consumer.listener.ConsumerConcurrentlyListe
 import io.andy.rocketmq.wrapper.core.consumer.listener.ConsumerOrderlyListener;
 import io.andy.rocketmq.wrapper.core.consumer.processor.ConcurrentlyMessageProcessor;
 import io.andy.rocketmq.wrapper.core.consumer.processor.OrderlyMessageProcessor;
+import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import io.netty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -25,18 +26,18 @@ import java.util.Objects;
  *
  */
 @Slf4j
-public class RMConsumer implements MQEndpoint {
-    private String nameSrvAddr;
-    private String consumerGroup;
-    private String topic;
-    private boolean orderly;
+public class RMConsumer extends AbstractMQEndpoint {
+    private boolean                        orderly;
+    private String                         nameSrvAddr;
+    private String                         consumerGroup;
+    private String                         topic;
 
-    private Options options = new Options();
-
-    private OrderlyMessageProcessor orderlyProcessor;
-    private ConcurrentlyMessageProcessor concurrentlyProcessor;
-    private MessageModel messageModel = MessageModel.CLUSTERING;
-    private DefaultMQPushConsumer pushConsumer;
+    private Options                        options = new Options();
+    private OrderlyMessageProcessor        orderlyProcessor;
+    private ConcurrentlyMessageProcessor   concurrentlyProcessor;
+    private MessageModel                   messageModel = MessageModel.CLUSTERING;
+    private DefaultMQPushConsumer          pushConsumer;
+    private Class<?>                       messageBodyClazz;
 
     @Override
     public RMConsumer start() {
@@ -127,10 +128,22 @@ public class RMConsumer implements MQEndpoint {
         return this;
     }
 
+    public RMConsumer messageConverter(MessageConverter messageConverter) {
+        this.messageConverter = messageConverter;
+
+        return this;
+    }
+
+    public RMConsumer messageBodyClazz(Class<?> clazz) {
+        this.messageBodyClazz = clazz;
+        return this;
+    }
+
     private synchronized void init() {
         Objects.requireNonNull(consumerGroup);
         Objects.requireNonNull(nameSrvAddr);
         Objects.requireNonNull(topic);
+        Objects.requireNonNull(messageBodyClazz);
 
         pushConsumer = new DefaultMQPushConsumer(consumerGroup);
 
@@ -140,10 +153,12 @@ public class RMConsumer implements MQEndpoint {
 
         if (orderly) {
             Objects.requireNonNull(orderlyProcessor);
-            pushConsumer.registerMessageListener(new ConsumerOrderlyListener(orderlyProcessor));
+            pushConsumer.registerMessageListener(
+                    new ConsumerOrderlyListener(orderlyProcessor, getRequiredMessageConverter()));
         } else {
             Objects.requireNonNull(concurrentlyProcessor);
-            pushConsumer.registerMessageListener(new ConsumerConcurrentlyListener(concurrentlyProcessor));
+            pushConsumer.registerMessageListener(
+                    new ConsumerConcurrentlyListener(concurrentlyProcessor, getRequiredMessageConverter()));
         }
 
         try {

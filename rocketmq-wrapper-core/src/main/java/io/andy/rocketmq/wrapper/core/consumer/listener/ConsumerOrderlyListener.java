@@ -2,11 +2,16 @@ package io.andy.rocketmq.wrapper.core.consumer.listener;
 
 
 import io.andy.rocketmq.wrapper.core.consumer.processor.OrderlyMessageProcessor;
+import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.consumer.listener.*;
+import org.apache.rocketmq.client.consumer.listener.ConsumeOrderlyContext;
+import org.apache.rocketmq.client.consumer.listener.ConsumeOrderlyStatus;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.common.message.MessageExt;
 
 import java.util.List;
+
+import static io.andy.rocketmq.wrapper.core.utils.ReflectUtils.getMessageType;
 
 
 /**
@@ -17,10 +22,14 @@ import java.util.List;
 
 public class ConsumerOrderlyListener implements MessageListenerOrderly {
 
-    private OrderlyMessageProcessor messageProcessor;
+    private OrderlyMessageProcessor      messageProcessor;
+    private MessageConverter             messageConverter;
+    private Class<?>                     messageBodyClazz;
 
-    public ConsumerOrderlyListener(OrderlyMessageProcessor messageProcessor) {
+    public ConsumerOrderlyListener(OrderlyMessageProcessor messageProcessor, MessageConverter messageConverter) {
         this.messageProcessor = messageProcessor;
+        this.messageConverter = messageConverter;
+        this.messageBodyClazz = getMessageType(messageProcessor, 1);
     }
 
     @Override
@@ -43,7 +52,7 @@ public class ConsumerOrderlyListener implements MessageListenerOrderly {
      * 处理收到的消息
      */
     private ConsumeOrderlyStatus handleMessage(MessageExt msg, String msgId) {
-        String message = new String(msg.getBody());
+        Object message = messageConverter.fromMessageBody(msg.getBody(), messageBodyClazz);
         log.info("msgId={}, 消费者接收到消息, message={}", msgId, message);
 
         return messageProcessor.process(msg, message);
