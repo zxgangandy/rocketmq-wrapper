@@ -27,7 +27,7 @@ public class ProducerTest {
                 .start();
 
         try {
-            producer.sendTransactionMessage(new MessageBody().setTopic("topic"),null);
+            producer.sendTransactionMessage(new MessageBody().setTopic("aaaa"),null);
         } catch (Exception e) {
             e.printStackTrace();
         }

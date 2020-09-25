@@ -37,12 +37,12 @@ public class ConsumerConcurrentlyListener implements MessageListenerConcurrently
             for (MessageExt msg : msgs) {
                 int reconsumeTimes = msg.getReconsumeTimes();
                 String msgId = msg.getMsgId();
-                log.info("msgId={},消费次数={}", msgId, reconsumeTimes);
+                log.info("msgId={},重复消费次数={}", msgId, reconsumeTimes);
                 return handleMessage(msg, msgId);
             }
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         } catch (Exception e) {
-            log.error("钱包扣款消费异常,e={}", e);
+            log.error("消息消费异常,e={}", e);
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
     }

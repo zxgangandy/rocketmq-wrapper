@@ -38,12 +38,12 @@ public class ConsumerOrderlyListener implements MessageListenerOrderly {
             for (MessageExt msg : msgs) {
                 int reconsumeTimes = msg.getReconsumeTimes();
                 String msgId = msg.getMsgId();
-                log.info("msgId={}, 消费次数={}", msgId, reconsumeTimes);
+                log.info("msgId={}, 重复消费次数={}", msgId, reconsumeTimes);
                 return handleMessage(msg, msgId);
             }
             return ConsumeOrderlyStatus.SUCCESS;
         } catch (Exception e) {
-            log.error("钱包扣款消费异常, e={}", e);
+            log.error("消息消费异常, e={}", e);
             return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;
         }
     }
