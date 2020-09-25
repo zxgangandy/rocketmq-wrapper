@@ -164,7 +164,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         transactionMQProducer.setTransactionListener(transactionListener);
         transactionMQProducer.setRetryTimesWhenSendFailed(retryTimes);
         //transactionMQProducer.setVipChannelEnabled(false);
-        //transactionMQProducer.setSendMsgTimeout(10000);
+        transactionMQProducer.setSendMsgTimeout(10000);
         try {
             transactionMQProducer.start();
         } catch (MQClientException e) {

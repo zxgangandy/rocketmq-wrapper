@@ -28,7 +28,7 @@ public class ConsumerConcurrentlyListener implements MessageListenerConcurrently
     public ConsumerConcurrentlyListener(ConcurrentlyMessageProcessor messageProcessor, MessageConverter messageConverter) {
         this.messageProcessor = messageProcessor;
         this.messageConverter = messageConverter;
-        this.messageBodyClazz = getMessageType(messageProcessor, 1);
+        this.messageBodyClazz = getMessageType(this.messageProcessor, ConcurrentlyMessageProcessor.class);
     }
 
     @Override

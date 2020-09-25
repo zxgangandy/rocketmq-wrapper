@@ -29,7 +29,7 @@ public class ConsumerOrderlyListener implements MessageListenerOrderly {
     public ConsumerOrderlyListener(OrderlyMessageProcessor messageProcessor, MessageConverter messageConverter) {
         this.messageProcessor = messageProcessor;
         this.messageConverter = messageConverter;
-        this.messageBodyClazz = getMessageType(messageProcessor, 1);
+        this.messageBodyClazz = getMessageType(this.messageProcessor, OrderlyMessageProcessor.class);
     }
 
     @Override
