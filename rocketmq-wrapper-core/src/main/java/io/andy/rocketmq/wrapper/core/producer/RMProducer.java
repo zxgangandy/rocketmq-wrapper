@@ -3,6 +3,7 @@ package io.andy.rocketmq.wrapper.core.producer;
 import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
 import io.andy.rocketmq.wrapper.core.config.Option;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
+import io.andy.rocketmq.wrapper.core.producer.listener.AbstractTransactionListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -28,7 +29,7 @@ public class RMProducer  extends AbstractMQEndpoint {
 
     private ExecutorService             executorService;
     private TransactionMQProducer       transactionMQProducer;
-    private TransactionListener         transactionListener;
+    private AbstractTransactionListener transactionListener;
 
     @Override
     public RMProducer start() {
@@ -81,7 +82,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      *  设置事务消息的监听器
      */
-    public RMProducer transactionListener(TransactionListener transactionListener) {
+    public RMProducer transactionListener(AbstractTransactionListener transactionListener) {
         this.transactionListener = transactionListener;
 
         return this;
@@ -157,6 +158,8 @@ public class RMProducer  extends AbstractMQEndpoint {
                     thread.setName(producerGroup + "-check-thread");
                     return null;
                 });
+
+        transactionListener.setMessageConverter(messageConverter);
 
         transactionMQProducer = new TransactionMQProducer(producerGroup);
         transactionMQProducer.setNamesrvAddr(nameSrvAddr);
