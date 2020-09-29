@@ -19,7 +19,6 @@
     </licenses>
     <modules>
         <module>rocketmq-wrapper-core</module>
-        <module>rocketmq-wrapper-starter</module>
     </modules>
 
 
