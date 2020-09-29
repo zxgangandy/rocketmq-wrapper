@@ -8,6 +8,8 @@
     <artifactId>rocketmq-wrapper</artifactId>
     <packaging>pom</packaging>
     <version>1.0.3</version>
+    <description>https://github.com/zxgangandy/rocketmq-wrapper</description>
+    <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
     <modules>
         <module>rocketmq-wrapper-core</module>
         <module>rocketmq-wrapper-starter</module>
