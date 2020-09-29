@@ -9,7 +9,6 @@ import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.client.producer.TransactionListener;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
@@ -19,6 +18,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static io.andy.rocketmq.wrapper.core.constant.Constants.MSG_BODY_CLASS;
 
 @Slf4j
 public class RMProducer  extends AbstractMQEndpoint {
@@ -118,6 +119,8 @@ public class RMProducer  extends AbstractMQEndpoint {
     public SendResult sendMessage(Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, messageBody);
+        message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
+
         return transactionMQProducer.send(message);
     }
 
@@ -127,15 +130,19 @@ public class RMProducer  extends AbstractMQEndpoint {
     public void sendMessageAsync(Object req, SendCallback sendCallback) throws InterruptedException, RemotingException, MQClientException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, messageBody);
+        message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
+
         transactionMQProducer.send(message, sendCallback);
     }
 
     /**
      *  同步发送事务消息到broker
      */
-    public SendResult sendTransactionMessage(Object req, Object arg)  throws  MQClientException{
+    public  SendResult sendTransactionMessage(Object req, Object arg)  throws  MQClientException{
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, messageBody);
+        message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
+
         return transactionMQProducer.sendMessageInTransaction(message, arg);
     }
 
