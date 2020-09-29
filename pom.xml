@@ -11,9 +11,7 @@
     <modules>
         <module>rocketmq-wrapper-core</module>
         <module>rocketmq-wrapper-starter</module>
-        <module>rocketmq-wrapper-website</module>
     </modules>
-
 
 
     <developers>
