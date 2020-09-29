@@ -10,6 +10,12 @@
     <version>1.0.3</version>
     <description>https://github.com/zxgangandy/rocketmq-wrapper</description>
     <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
     <modules>
         <module>rocketmq-wrapper-core</module>
         <module>rocketmq-wrapper-starter</module>
