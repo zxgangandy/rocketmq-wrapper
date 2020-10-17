@@ -1,8 +1,13 @@
 # rocketmq-wrapper
-Easy to use for rocketmq
 
+[![AUR](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://github.com/zxgangandy/pigeon-rpc/blob/master/LICENSE)
+[![](https://img.shields.io/badge/Author-zxgangandy-orange.svg)](https://github.com/zxgangandy/pigeon-rpc)
+[![](https://img.shields.io/badge/version-1.0.3-brightgreen.svg)](https://github.com/zxgangandy/pigeon-rpc)
 
+## 简介
+Rocketmq-wrapper是对rocketmq library的封装，支持普通消息和事务消息的发送和处理。Rocketmq-wrapper能方便提高我们使用rocketmq client来来构建应用程序，而忽略一些细节上的事件。
 
+## 使用
   - 消息生产者例子：
   
   ``` java
