@@ -7,6 +7,10 @@
 ## 简介
 Rocketmq-wrapper是对rocketmq library的封装，支持普通消息和事务消息的发送和处理。Rocketmq-wrapper能方便提高我们使用rocketmq client来来构建应用程序，而忽略一些细节上的事件。
 
+- 支持同步消息发送
+- 支持异步消息发送
+- 支持事务消息发送
+
 ## 使用
   - 消息生产者例子：
   
