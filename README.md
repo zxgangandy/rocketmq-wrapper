@@ -5,13 +5,23 @@
 [![](https://img.shields.io/badge/version-1.0.3-brightgreen.svg)](https://github.com/zxgangandy/pigeon-rpc)
 
 ## 简介
-Rocketmq-wrapper是对rocketmq library的封装，支持普通消息和事务消息的发送和处理。Rocketmq-wrapper能方便提高我们使用rocketmq client来来构建应用程序，而忽略一些细节上的事件。
+Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消息和事务消息的发送和处理。Rocketmq-wrapper能大大方便我们使用rocketmq client来来构建应用程序，而忽略一些细节上的事件。
 
 - 支持同步消息发送
 - 支持异步消息发送
 - 支持事务消息发送
 
 ## 使用
+  - 引入library：
+  
+  ``` xml
+  <dependency>
+    <groupId>io.github.zxgangandy</groupId>
+    <artifactId>rocketmq-wrapper-core</artifactId>
+    <version>1.0.3</version>
+  </dependency>
+  ```
+     
   - 消息生产者例子：
   
   ``` java
