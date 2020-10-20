@@ -82,7 +82,9 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
   
   ```
   
-  ### 消息发送端例子
+- 事务消息需要实现TransactionListener接口，在使用rocketmq-wrapper的时候只需要继承AbstractTransactionListener即可；
+  
+### 消息发送端例子
   
   ``` java
   RMWrapper.with(RMConsumer.class)
@@ -99,3 +101,7 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
       .start();
     
   ```
+
+### 自定义消息序列化工具
+
+- 用户也可以根据自己的喜好和业务要求定制自己的消息序列化工具，只需要实现MessageConverter接口
