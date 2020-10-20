@@ -38,7 +38,7 @@ public class ConsumerOrderlyListener implements MessageListenerOrderly {
             for (MessageExt msg : msgs) {
                 int reconsumeTimes = msg.getReconsumeTimes();
                 String msgId = msg.getMsgId();
-                log.info("msgId={}, 重复消费次数={}", msgId, reconsumeTimes);
+                log.debug("msgId={}, 重复消费次数={}", msgId, reconsumeTimes);
                 return handleMessage(msg, msgId);
             }
             return ConsumeOrderlyStatus.SUCCESS;
@@ -53,7 +53,7 @@ public class ConsumerOrderlyListener implements MessageListenerOrderly {
      */
     private ConsumeOrderlyStatus handleMessage(MessageExt msg, String msgId) {
         Object message = messageConverter.fromMessageBody(msg.getBody(), messageBodyClazz);
-        log.info("msgId={}, 消费者接收到消息, message={}", msgId, message);
+        log.debug("msgId={}, 消费者接收到消息, message={}", msgId, message);
 
         return messageProcessor.process(msg, message);
     }

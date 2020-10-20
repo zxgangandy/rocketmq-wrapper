@@ -14,7 +14,8 @@ public class ProducerTest {
         producer = RMWrapper.with(RMProducer.class)
                 .producerGroup("producer-test")
                 .nameSrvAddr("127.0.0.1:9876")
-                .topic("test1").retryTimes(3)
+                .topic("test")
+                .retryTimes(3)
                 .transactionListener(new TxListener())
                 .start();
     }

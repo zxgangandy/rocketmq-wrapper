@@ -98,7 +98,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  生产者发送同步消息重试次数设置（异步消息的重试次数总是1）
+     *  生产者发送同步/异步消息重试次数设置
      */
     public RMProducer retryTimes(int retryTimes) {
         this.retryTimes = retryTimes;
@@ -173,6 +173,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         transactionMQProducer.setExecutorService(executorService);
         transactionMQProducer.setTransactionListener(transactionListener);
         transactionMQProducer.setRetryTimesWhenSendFailed(retryTimes);
+        transactionMQProducer.setRetryTimesWhenSendAsyncFailed(retryTimes);
         //transactionMQProducer.setVipChannelEnabled(false);
         transactionMQProducer.setSendMsgTimeout(10000);
         try {
