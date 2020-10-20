@@ -12,7 +12,7 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 - 支持事务消息发送
 
 ## 使用
-  - 引入library：
+  ### 引入library：
   
   ``` xml
   <dependency>
@@ -22,33 +22,67 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
   </dependency>
   ```
      
-  - 消息生产者例子：
+  ### 消息生产者例子：
   
+
   ``` java
-  RMProducer producer = RMWrapper.with(RMProducer.class)
-    .producerGroup("producer-test")
-    .nameSrvAddr("127.0.0.1:9876")
-    .topic("test").retryTimes(3)
-    .transactionListener(new TransactionListener() {
-        @Override
-        public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-            return LocalTransactionState.COMMIT_MESSAGE;
-        }
+  private RMProducer producer;
   
-        @Override
-        public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-            return LocalTransactionState.COMMIT_MESSAGE;
-        }
-    }).start();
+      @Before
+      public void init() {
+          producer = RMWrapper.with(RMProducer.class)
+                  .producerGroup("producer-test")
+                  .nameSrvAddr("127.0.0.1:9876")
+                  .topic("test1").retryTimes(3)
+                  .transactionListener(new TxListener())
+                  .start();
+      }
   
-  try {
-    producer.sendTransactionMessage(new MessageBody().setTopic("topic"),null);
-  } catch (Exception e) {
-    e.printStackTrace();
-  }
+      //同步消息
+      @Test
+      public void sendMsgSync() {
+          try {
+              SendResult sendResult = producer.sendMessage(new MessageBody().setContent("a"));
+              System.out.println("sendMsgSync, sendResult=" +sendResult);
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+      }
+  
+      //异步消息
+      @Test
+      public void sendMsgAsync() {
+          try {
+              producer.sendMessageAsync(new MessageBody().setContent("b"), new SendCallback() {
+                  @Override
+                  public void onSuccess(SendResult sendResult) {
+                      System.out.println("sendMsgAsync, sendResult=" +sendResult);
+                  }
+  
+                  @Override
+                  public void onException(Throwable e) {
+                      System.out.println("sendMsgAsync, e=" +e);
+                  }
+              });
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+      }
+  
+      //事务消息
+      @Test
+      public void sendTxMsg() {
+          try {
+              SendResult sendResult = producer.sendTransactionMessage(new MessageBody().setContent("c"), "d");
+              System.out.println("sendTxMsg, sendResult=" +sendResult);
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+      }
   
   ```
-  - 消息发送端例子
+  
+  ### 消息发送端例子
   
   ``` java
   RMWrapper.with(RMConsumer.class)

@@ -98,7 +98,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  生产者发送消息重试次数设置
+     *  生产者发送同步消息重试次数设置（异步消息的重试次数总是1）
      */
     public RMProducer retryTimes(int retryTimes) {
         this.retryTimes = retryTimes;

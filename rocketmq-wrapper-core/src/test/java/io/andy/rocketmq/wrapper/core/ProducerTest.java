@@ -1,6 +1,7 @@
 package io.andy.rocketmq.wrapper.core;
 
 import io.andy.rocketmq.wrapper.core.producer.RMProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,7 @@ public class ProducerTest {
                 .transactionListener(new TxListener())
                 .start();
     }
-    
+
     @Test
     public void sendMsgSync() {
         try {
@@ -28,18 +29,33 @@ public class ProducerTest {
         }
     }
 
-    public static void main(String argv[]) {
-        RMProducer producer = RMWrapper.with(RMProducer.class)
-                .producerGroup("producer-test")
-                .nameSrvAddr("127.0.0.1:9876")
-                .topic("test").retryTimes(3)
-                .transactionListener(new TxListener())
-                .start();
-
+    @Test
+    public void sendMsgAsync() {
         try {
-            producer.sendTransactionMessage(new MessageBody().setContent("b"),null);
+            producer.sendMessageAsync(new MessageBody().setContent("b"), new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    System.out.println("sendMsgAsync, sendResult=" +sendResult);
+                }
+
+                @Override
+                public void onException(Throwable e) {
+                    System.out.println("sendMsgAsync, e=" +e);
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void sendTxMsg() {
+        try {
+            SendResult sendResult = producer.sendTransactionMessage(new MessageBody().setContent("c"), "d");
+            System.out.println("sendTxMsg, sendResult=" +sendResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
