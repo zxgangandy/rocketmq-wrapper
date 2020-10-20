@@ -6,5 +6,5 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class MessageBody {
-    private String topic;
+    private String content;
 }

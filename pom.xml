@@ -10,6 +10,7 @@
     <version>1.0.3</version>
     <description>https://github.com/zxgangandy/rocketmq-wrapper</description>
     <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
+
     <name>rocketmq-wrapper</name>
     <licenses>
         <license>

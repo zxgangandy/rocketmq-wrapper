@@ -50,18 +50,18 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
   ```
   - 消息发送端例子
   
-    ``` java
-    RMWrapper.with(RMConsumer.class)
-        .consumerGroup("consumer-test")
-        .nameSrvAddr("127.0.0.1:9876")
-        .topic("test")
-        .concurrentlyMessageProcessor(new ConcurrentlyMessageProcessor<MessageBody>() {
-            @Override
-            public ConsumeConcurrentlyStatus process(MessageExt rawMsg, MessageBody messageBody) {
-                System.out.println("messageBody=" + messageBody);
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-        })
-        .start();
+  ``` java
+  RMWrapper.with(RMConsumer.class)
+      .consumerGroup("consumer-test")
+      .nameSrvAddr("127.0.0.1:9876")
+      .topic("test")
+      .concurrentlyMessageProcessor(new ConcurrentlyMessageProcessor<MessageBody>() {
+          @Override
+          public ConsumeConcurrentlyStatus process(MessageExt rawMsg, MessageBody messageBody) {
+             System.out.println("messageBody=" + messageBody);
+             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+          }
+      })
+      .start();
     
-    ```
+  ```

@@ -180,7 +180,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         } catch (MQClientException e) {
             throw new RuntimeException("启动[生产者]RMProducer异常", e);
         }
-        log.info("启动[生产者]RMProducer, topic={}", topic);
+        log.info("启动[生产者]RMProducer, content={}", topic);
     }
 
 

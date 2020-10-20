@@ -27,7 +27,6 @@ import java.util.Objects;
  */
 @Slf4j
 public class RMConsumer extends AbstractMQEndpoint {
-    private boolean                        orderly;
     private String                         nameSrvAddr;
     private String                         consumerGroup;
     private String                         topic;
@@ -92,15 +91,6 @@ public class RMConsumer extends AbstractMQEndpoint {
     }
 
     /**
-     *  消费者是否是单序消息设置
-     */
-    public RMConsumer orderly(boolean orderly) {
-        this.orderly = orderly;
-
-        return this;
-    }
-
-    /**
      *  消费者单序消息处理器设置
      */
     public RMConsumer orderlyProcessor(OrderlyMessageProcessor orderlyProcessor) {
@@ -112,7 +102,7 @@ public class RMConsumer extends AbstractMQEndpoint {
     /**
      *  消费者并发消息处理器设置
      */
-    public RMConsumer concurrentlyMessageProcessor(ConcurrentlyMessageProcessor concurrentlyProcessor) {
+    public RMConsumer concurrentlyProcessor(ConcurrentlyMessageProcessor concurrentlyProcessor) {
         this.concurrentlyProcessor = concurrentlyProcessor;
 
         return this;
@@ -149,14 +139,14 @@ public class RMConsumer extends AbstractMQEndpoint {
 
         final MessageConverter messageConverter = getRequiredMessageConverter();
 
-        if (orderly) {
-            Objects.requireNonNull(orderlyProcessor);
+        if (Objects.nonNull(orderlyProcessor)) {
             pushConsumer.registerMessageListener(
                     new ConsumerOrderlyListener(orderlyProcessor, messageConverter));
-        } else {
-            Objects.requireNonNull(concurrentlyProcessor);
+        } else if (Objects.nonNull(concurrentlyProcessor)){
             pushConsumer.registerMessageListener(
                     new ConsumerConcurrentlyListener(concurrentlyProcessor, messageConverter));
+        } else {
+            throw new IllegalStateException("Consumer message listener not initialized yet!!");
         }
 
         try {
@@ -167,7 +157,7 @@ public class RMConsumer extends AbstractMQEndpoint {
             throw new IllegalStateException("[消息消费者]--RMConsumer加载异常!", e);
         }
 
-        log.info("[消息消费者]--RMConsumer加载完成!");
+        log.info("[消息消费者]=>RMConsumer-{}加载完成!", topic);
     }
 
 }
