@@ -14,7 +14,7 @@ public class ConsumerTest {
         RMWrapper.with(RMConsumer.class)
                 .consumerGroup("consumer-test")
                 .nameSrvAddr("127.0.0.1:9876")
-                .topic("test")
+                .subscribe("test")
                 .concurrentlyProcessor(new ConcurrentlyMessageProcessor<MessageBody>() {
                     @Override
                     public ConsumeConcurrentlyStatus process(MessageExt rawMsg, MessageBody messageBody) {

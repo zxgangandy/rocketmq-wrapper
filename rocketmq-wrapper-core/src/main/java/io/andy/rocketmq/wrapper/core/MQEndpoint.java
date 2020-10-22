@@ -13,7 +13,5 @@ public interface MQEndpoint {
 
     MQEndpoint nameSrvAddr(String nameSrvAddr);
 
-    MQEndpoint topic(String topic);
-
     void stop();
 }

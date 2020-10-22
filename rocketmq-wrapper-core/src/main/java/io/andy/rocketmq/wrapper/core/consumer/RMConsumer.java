@@ -29,7 +29,6 @@ import java.util.Objects;
 public class RMConsumer extends AbstractMQEndpoint {
     private String                         nameSrvAddr;
     private String                         consumerGroup;
-    private String                         topic;
 
     private Options                        options = new Options();
     private OrderlyMessageProcessor        orderlyProcessor;
@@ -37,9 +36,13 @@ public class RMConsumer extends AbstractMQEndpoint {
     private MessageModel                   messageModel = MessageModel.CLUSTERING;
     private DefaultMQPushConsumer          pushConsumer;
 
+    public RMConsumer() {
+        init();
+    }
+
     @Override
     public RMConsumer start() {
-        init();
+        startConsumer();
         return this;
     }
 
@@ -69,16 +72,6 @@ public class RMConsumer extends AbstractMQEndpoint {
     @Override
     public RMConsumer nameSrvAddr(String nameSrvAddr) {
         this.nameSrvAddr = nameSrvAddr;
-        return this;
-    }
-
-    /**
-     *  消费者topic设置
-     */
-    @Override
-    public RMConsumer topic(String topic) {
-        this.topic = topic;
-
         return this;
     }
 
@@ -126,12 +119,39 @@ public class RMConsumer extends AbstractMQEndpoint {
         return this;
     }
 
-    private synchronized void init() {
+    /**
+     *  订阅消息
+     */
+    public RMConsumer subscribe(String topic) {
+        try {
+            pushConsumer.subscribe(topic, "*");
+        } catch (MQClientException e) {
+            log.error("[消息消费者]--RMConsumer订阅异常!e={}", e);
+            throw new IllegalStateException("[消息消费者]--RMConsumer加载异常!", e);
+        }
+        return this;
+    }
+
+    /**
+     * 订阅消息
+     */
+    public RMConsumer subscribe(String topic, String subExpression) {
+        try {
+            pushConsumer.subscribe(topic, subExpression);
+        } catch (MQClientException e) {
+            log.error("[消息消费者]--RMConsumer订阅异常!e={}", e);
+            throw new IllegalStateException("[消息消费者]--RMConsumer加载异常!", e);
+        }
+        return this;
+    }
+
+    private void init() {
+        pushConsumer = new DefaultMQPushConsumer(consumerGroup);
+    }
+
+    private void startConsumer() {
         Objects.requireNonNull(consumerGroup);
         Objects.requireNonNull(nameSrvAddr);
-        Objects.requireNonNull(topic);
-
-        pushConsumer = new DefaultMQPushConsumer(consumerGroup);
 
         pushConsumer.setNamesrvAddr(nameSrvAddr);
         pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
@@ -150,14 +170,12 @@ public class RMConsumer extends AbstractMQEndpoint {
         }
 
         try {
-            pushConsumer.subscribe(topic, "*");
             pushConsumer.start();
         } catch (MQClientException e) {
             log.error("[消息消费者]--RMConsumer加载异常!e={}", e);
             throw new IllegalStateException("[消息消费者]--RMConsumer加载异常!", e);
         }
 
-        log.info("[消息消费者]=>RMConsumer-{}加载完成!", topic);
+        log.info("[消息消费者]=>RMConsumer加载完成!");
     }
-
 }

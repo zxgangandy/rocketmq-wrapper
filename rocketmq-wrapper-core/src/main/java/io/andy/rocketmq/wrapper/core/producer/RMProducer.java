@@ -5,6 +5,7 @@ import io.andy.rocketmq.wrapper.core.config.Option;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import io.andy.rocketmq.wrapper.core.producer.listener.AbstractTransactionListener;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.SendCallback;
@@ -23,10 +24,10 @@ import static io.andy.rocketmq.wrapper.core.constant.Constants.MSG_BODY_CLASS;
 
 @Slf4j
 public class RMProducer  extends AbstractMQEndpoint {
+    private static final String         EMPTY = StringUtils.EMPTY;
     private int                         retryTimes      = 2;
     private String                      nameSrvAddr;
     private String                      producerGroup;
-    private String                      topic;
 
     private ExecutorService             executorService;
     private TransactionMQProducer       transactionMQProducer;
@@ -71,16 +72,6 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  生产者topic设置
-     */
-    @Override
-    public RMProducer topic(String topic) {
-        this.topic = topic;
-
-        return this;
-    }
-
-    /**
      *  设置事务消息的监听器
      */
     public RMProducer transactionListener(AbstractTransactionListener transactionListener) {
@@ -116,9 +107,16 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      *  同步发送消息到broker
      */
-    public SendResult sendMessage(Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+    public SendResult sendMessage(String topic, Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        return sendMessage(topic, EMPTY, req);
+    }
+
+    /**
+     *  同步发送消息到broker
+     */
+    public SendResult sendMessage(String topic, String tags, Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
-        Message message = new Message(topic, messageBody);
+        Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
         return transactionMQProducer.send(message);
@@ -127,9 +125,16 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      *  异步发送消息到broker
      */
-    public void sendMessageAsync(Object req, SendCallback sendCallback) throws InterruptedException, RemotingException, MQClientException {
+    public void sendMessageAsync(String topic, Object req, SendCallback sendCallback) throws InterruptedException, RemotingException, MQClientException {
+        sendMessageAsync(topic, EMPTY, req, sendCallback);
+    }
+
+    /**
+     *  异步发送消息到broker
+     */
+    public void sendMessageAsync(String topic, String tags, Object req, SendCallback sendCallback) throws InterruptedException, RemotingException, MQClientException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
-        Message message = new Message(topic, messageBody);
+        Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
         transactionMQProducer.send(message, sendCallback);
@@ -138,9 +143,16 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      *  同步发送事务消息到broker
      */
-    public  SendResult sendTransactionMessage(Object req, Object arg)  throws  MQClientException{
+    public  SendResult sendTransactionMessage(String topic, Object req, Object arg)  throws  MQClientException{
+       return sendTransactionMessage(topic, EMPTY, req, arg);
+    }
+
+    /**
+     *  同步发送事务消息到broker
+     */
+    public  SendResult sendTransactionMessage(String topic, String tags, Object req, Object arg)  throws  MQClientException{
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
-        Message message = new Message(topic, messageBody);
+        Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
         return transactionMQProducer.sendMessageInTransaction(message, arg);
@@ -150,7 +162,6 @@ public class RMProducer  extends AbstractMQEndpoint {
 
         Objects.requireNonNull(producerGroup);
         Objects.requireNonNull(nameSrvAddr);
-        Objects.requireNonNull(topic);
         Objects.requireNonNull(transactionListener);
 
         // 初始化回查线程池
@@ -181,7 +192,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         } catch (MQClientException e) {
             throw new RuntimeException("启动[生产者]RMProducer异常", e);
         }
-        log.info("启动[生产者]RMProducer, content={}", topic);
+        log.info("启动[生产者]RMProducer成功");
     }
 
 
