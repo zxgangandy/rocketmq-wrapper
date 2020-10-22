@@ -2,86 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>rocketmq-wrapper</artifactId>
+        <groupId>io.github.zxgangandy</groupId>
+        <version>1.0.3</version>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.zxgangandy</groupId>
-    <artifactId>rocketmq-wrapper</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0.3</version>
-    <description>https://github.com/zxgangandy/rocketmq-wrapper</description>
-    <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
-
-    <name>rocketmq-wrapper</name>
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-    <modules>
-        <module>rocketmq-wrapper-core</module>
-        <module>rocketmq-wrapper-starter</module>
-    </modules>
-
-
-    <developers>
-        <developer>
-            <name>liuzhiwen</name>
-            <email>524409188@qq.com</email>
-            <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
-        </developer>
-    </developers>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <scm>
-        <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
-        <connection>https://github.com/zxgangandy/rocketmq-wrapper.git</connection>
-        <developerConnection>https://github.com/zxgangandy/rocketmq-wrapper</developerConnection>
-    </scm>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <project.resources.sourceEncoding>UTF-8</project.resources.sourceEncoding>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <lombok.version>1.18.12</lombok.version>
-        <logback.version>1.2.3</logback.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-core</artifactId>
-                <version>${logback.version}</version>
-            </dependency>
-
-
-        </dependencies>
-    </dependencyManagement>
+    <artifactId>rocketmq-wrapper-starter</artifactId>
 
     <profiles>
         <profile>
@@ -140,10 +68,14 @@
                                 <checkModificationExclude>release-pom.xml</checkModificationExclude>
 
                                 <checkModificationExclude>jdonframework.iml</checkModificationExclude>
-                                <checkModificationExclude>JdonAccessory/jdon-hibernate3x/jdon-hibernate3x.iml</checkModificationExclude>
-                                <checkModificationExclude>JdonAccessory/jdon-jdbc/jdon-jdbc.iml</checkModificationExclude>
-                                <checkModificationExclude>JdonAccessory/jdon-remote/jdon-remote.iml</checkModificationExclude>
-                                <checkModificationExclude>JdonAccessory/jdon-struts1x/jdon-struts1x.iml</checkModificationExclude>
+                                <checkModificationExclude>JdonAccessory/jdon-hibernate3x/jdon-hibernate3x.iml
+                                </checkModificationExclude>
+                                <checkModificationExclude>JdonAccessory/jdon-jdbc/jdon-jdbc.iml
+                                </checkModificationExclude>
+                                <checkModificationExclude>JdonAccessory/jdon-remote/jdon-remote.iml
+                                </checkModificationExclude>
+                                <checkModificationExclude>JdonAccessory/jdon-struts1x/jdon-struts1x.iml
+                                </checkModificationExclude>
 
                             </checkModificationExcludes>
                         </configuration>
@@ -212,6 +144,5 @@
             </build>
         </profile>
     </profiles>
-
 
 </project>
