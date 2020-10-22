@@ -19,7 +19,6 @@ import static io.andy.rocketmq.wrapper.core.utils.ReflectUtils.getMessageType;
  * @desc 顺序消息消费监听回调实现
  */
 @Slf4j
-
 public class ConsumerOrderlyListener implements MessageListenerOrderly {
 
     private OrderlyMessageProcessor      messageProcessor;

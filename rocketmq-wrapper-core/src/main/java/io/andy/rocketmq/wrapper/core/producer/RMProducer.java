@@ -107,14 +107,16 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      *  同步发送消息到broker
      */
-    public SendResult sendMessage(String topic, Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+    public SendResult sendMessage(String topic, Object req)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         return sendMessage(topic, EMPTY, req);
     }
 
     /**
      *  同步发送消息到broker
      */
-    public SendResult sendMessage(String topic, String tags, Object req) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+    public SendResult sendMessage(String topic, String tags, Object req)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
@@ -125,14 +127,16 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      *  异步发送消息到broker
      */
-    public void sendMessageAsync(String topic, Object req, SendCallback sendCallback) throws InterruptedException, RemotingException, MQClientException {
+    public void sendMessageAsync(String topic, Object req, SendCallback sendCallback)
+            throws InterruptedException, RemotingException, MQClientException {
         sendMessageAsync(topic, EMPTY, req, sendCallback);
     }
 
     /**
      *  异步发送消息到broker
      */
-    public void sendMessageAsync(String topic, String tags, Object req, SendCallback sendCallback) throws InterruptedException, RemotingException, MQClientException {
+    public void sendMessageAsync(String topic, String tags, Object req, SendCallback sendCallback)
+            throws InterruptedException, RemotingException, MQClientException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
