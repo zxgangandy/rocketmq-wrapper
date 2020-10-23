@@ -8,26 +8,27 @@
     <artifactId>rocketmq-wrapper</artifactId>
     <packaging>pom</packaging>
     <version>1.0.3</version>
+    <name>rocketmq-wrapper</name>
+
     <description>https://github.com/zxgangandy/rocketmq-wrapper</description>
     <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
 
-    <name>rocketmq-wrapper</name>
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
-    <modules>
-        <module>rocketmq-wrapper-core</module>
-        <module>rocketmq-wrapper-starter</module>
-    </modules>
-
 
     <developers>
         <developer>
             <name>liuzhiwen</name>
             <email>524409188@qq.com</email>
+            <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
+        </developer>
+        <developer>
+            <name>zxgangandy</name>
+            <email>286505491@qq.com</email>
             <url>https://github.com/zxgangandy/rocketmq-wrapper</url>
         </developer>
     </developers>
@@ -48,40 +49,6 @@
         <connection>https://github.com/zxgangandy/rocketmq-wrapper.git</connection>
         <developerConnection>https://github.com/zxgangandy/rocketmq-wrapper</developerConnection>
     </scm>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <project.resources.sourceEncoding>UTF-8</project.resources.sourceEncoding>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <lombok.version>1.18.12</lombok.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.3.4.RELEASE</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
-        </dependency>
-    </dependencies>
 
     <profiles>
         <profile>
@@ -116,13 +83,6 @@
 
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-scm-plugin</artifactId>
-                        <version>1.8.1</version>
-                    </plugin>
-
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-release-plugin</artifactId>
                         <version>2.5.3</version>
                         <configuration>
@@ -147,13 +107,6 @@
 
                             </checkModificationExcludes>
                         </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.apache.maven.plugins</groupId>
-                                <artifactId>maven-scm-plugin</artifactId>
-                                <version>1.8.1</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
 
                     <plugin>
@@ -213,5 +166,9 @@
         </profile>
     </profiles>
 
+    <modules>
+        <module>rocketmq-wrapper-core</module>
+        <module>rocketmq-wrapper-starter</module>
+    </modules>
 
 </project>
