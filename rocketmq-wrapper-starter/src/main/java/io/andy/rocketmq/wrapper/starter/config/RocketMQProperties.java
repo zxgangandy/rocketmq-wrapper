@@ -70,6 +70,7 @@ public class RocketMQProperties {
         private boolean enableMsgTrace = true;
     }
 
+    @Data
     public static final class Consumer {
 
     }
