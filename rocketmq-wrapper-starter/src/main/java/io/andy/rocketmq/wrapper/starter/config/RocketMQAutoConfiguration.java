@@ -8,4 +8,5 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(RocketMQProperties.class)
 @Slf4j
 public class RocketMQAutoConfiguration {
+
 }
