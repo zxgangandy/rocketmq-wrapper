@@ -1,7 +1,6 @@
 package io.andy.rocketmq.wrapper.core.producer;
 
 import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
-import io.andy.rocketmq.wrapper.core.config.Option;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import io.andy.rocketmq.wrapper.core.producer.listener.AbstractTransactionListener;
 import lombok.extern.slf4j.Slf4j;
@@ -37,16 +36,6 @@ public class RMProducer  extends AbstractMQEndpoint {
     public RMProducer start() {
         init();
         return this;
-    }
-
-    @Override
-    public <T> RMProducer config(Option<T> option, T value) {
-        return null;
-    }
-
-    @Override
-    public <T> T putOptionGet(Option<T> option) {
-        return null;
     }
 
     @Override

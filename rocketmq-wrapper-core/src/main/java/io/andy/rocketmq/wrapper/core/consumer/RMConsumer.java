@@ -2,14 +2,11 @@ package io.andy.rocketmq.wrapper.core.consumer;
 
 import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
 
-import io.andy.rocketmq.wrapper.core.config.Option;
-import io.andy.rocketmq.wrapper.core.config.Options;
 import io.andy.rocketmq.wrapper.core.consumer.listener.ConsumerConcurrentlyListener;
 import io.andy.rocketmq.wrapper.core.consumer.listener.ConsumerOrderlyListener;
 import io.andy.rocketmq.wrapper.core.consumer.processor.ConcurrentlyMessageProcessor;
 import io.andy.rocketmq.wrapper.core.consumer.processor.OrderlyMessageProcessor;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
-import io.netty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -30,7 +27,6 @@ public class RMConsumer extends AbstractMQEndpoint {
     private String                         nameSrvAddr;
     private String                         consumerGroup;
 
-    private Options                        options = new Options();
     private OrderlyMessageProcessor        orderlyProcessor;
     private ConcurrentlyMessageProcessor   concurrentlyProcessor;
     private MessageModel                   messageModel = MessageModel.CLUSTERING;
@@ -44,18 +40,6 @@ public class RMConsumer extends AbstractMQEndpoint {
     public RMConsumer start() {
         startConsumer();
         return this;
-    }
-
-    @Override
-    public <T> RMConsumer config(Option<T> option, T value) {
-        ObjectUtil.checkNotNull(option, "option");
-        this.options.option(option, value);
-        return this;
-    }
-
-    @Override
-    public <T> T putOptionGet(Option<T> option) {
-        return options.option(option);
     }
 
     @Override
