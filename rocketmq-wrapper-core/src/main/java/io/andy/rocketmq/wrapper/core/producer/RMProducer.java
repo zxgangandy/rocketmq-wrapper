@@ -27,6 +27,8 @@ public class RMProducer  extends AbstractMQEndpoint {
     private int                         retryTimes      = 2;
     private String                      nameSrvAddr;
     private String                      producerGroup;
+    private String                      instanceName;
+    private String                      unitName;
 
     private ExecutorService             executorService;
     private TransactionMQProducer       transactionMQProducer;
@@ -74,6 +76,22 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public RMProducer producerGroup(String producerGroup) {
         this.producerGroup = producerGroup;
+        return this;
+    }
+
+    /**
+     *  设置生产者unitName（可以实现一个jvm向不同集群发送消息）
+     */
+    public RMProducer unitName(String unitName) {
+        this.unitName = unitName;
+        return this;
+    }
+
+    /**
+     *  设置生产者instanceName（可以实现一个jvm向不同集群发送消息）
+     */
+    public RMProducer instanceName(String instanceName) {
+        this.instanceName = instanceName;
         return this;
     }
 
@@ -178,6 +196,12 @@ public class RMProducer  extends AbstractMQEndpoint {
         transactionMQProducer.setTransactionListener(transactionListener);
         transactionMQProducer.setRetryTimesWhenSendFailed(retryTimes);
         transactionMQProducer.setRetryTimesWhenSendAsyncFailed(retryTimes);
+        transactionMQProducer.setUnitName(unitName);
+
+        if (StringUtils.isNotEmpty(instanceName)) {
+            transactionMQProducer.setInstanceName(instanceName);
+        }
+
         //transactionMQProducer.setVipChannelEnabled(false);
         transactionMQProducer.setSendMsgTimeout(10000);
         try {
