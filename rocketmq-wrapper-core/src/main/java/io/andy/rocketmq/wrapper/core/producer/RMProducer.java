@@ -2,6 +2,7 @@ package io.andy.rocketmq.wrapper.core.producer;
 
 import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
+import io.andy.rocketmq.wrapper.core.exception.MessageSendException;
 import io.andy.rocketmq.wrapper.core.producer.listener.AbstractTransactionListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,8 @@ import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,7 +34,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     private String                      unitName;
 
     private ExecutorService             executorService;
-    private TransactionMQProducer       transactionMQProducer;
+    private TransactionMQProducer       producer;
     private AbstractTransactionListener transactionListener;
 
     @Override
@@ -47,9 +50,9 @@ public class RMProducer  extends AbstractMQEndpoint {
             executorService = null;
         }
 
-        if (transactionMQProducer != null) {
-            transactionMQProducer.shutdown();
-            transactionMQProducer = null;
+        if (producer != null) {
+            producer.shutdown();
+            producer = null;
         }
     }
 
@@ -112,43 +115,127 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送消息到broker
+     *  同步发送消息到broker，采用默认的发送超时时间
      */
-    public SendResult sendMessage(String topic, Object req)
+    public SendResult sendSync(String topic, Object req)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        return sendMessage(topic, EMPTY, req);
+        return sendSync(topic, EMPTY, req, producer.getSendMsgTimeout());
     }
 
     /**
-     *  同步发送消息到broker
+     *  同步发送某个topic的消息到broker，自定义发送超时时间
      */
-    public SendResult sendMessage(String topic, String tags, Object req)
+    public SendResult sendSync(String topic, Object req, long timeout)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        return sendSync(topic, EMPTY, req, timeout);
+    }
+
+    /**
+     *  同步发送某个topic和tags的消息到broker
+     */
+    public SendResult sendSync(String topic, String tags, Object req)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
-        return transactionMQProducer.send(message);
+        return producer.send(message, producer.getSendMsgTimeout());
     }
+
+    /**
+     *  同步发送某个topic和tags的消息到broker，自定义发送超时时间
+     */
+    public SendResult sendSync(String topic, String tags, Object req, long timeout)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
+        Message message = new Message(topic, tags, messageBody);
+        message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
+
+        return producer.send(message, timeout);
+    }
+
+    /**
+     * send sync batch messages with default timeout.
+     *
+     * @param topic message topic
+     * @param messages Collection of {@link java.lang.Object}
+     * @return {@link SendResult}
+     */
+    public  SendResult sendBatchSync(String topic, Collection<Object> messages) {
+        return sendBatchSync(topic, EMPTY, messages, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * send sync batch messages with default timeout.
+     *
+     * @param topic message topic
+     * @param tags message tags
+     * @param messages Collection of {@link java.lang.Object}
+     * @return {@link SendResult}
+     */
+    public  SendResult sendBatchSync(String topic, String tags, Collection<Object> messages) {
+        return sendBatchSync(topic, tags, messages, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * send sync batch messages in a given timeout.
+     *
+     * @param topic message topic
+     * @param tags message tags
+     * @param messages Collection of {@link java.lang.Object}
+     * @param timeout send timeout with millis
+     * @return {@link SendResult}
+     */
+    public  SendResult sendBatchSync(String topic, String tags, Collection<Object> messages, long timeout) {
+        if (Objects.isNull(messages) || messages.size() == 0) {
+            log.error("send sync with batch failed. topic:{}, messages is empty ", topic);
+            throw new IllegalArgumentException("`messages` can not be empty");
+        }
+
+        try {
+            long now = System.currentTimeMillis();
+            Collection<Message> rmqMsgs = new ArrayList<>();
+            for (Object msg : messages) {
+                if (Objects.isNull(msg)) {
+                    log.warn("Found a message empty in the batch, skip it");
+                    continue;
+                }
+                byte[] messageBody = getRequiredMessageConverter().toMessageBody(msg);
+                Message message = new Message(topic, tags, messageBody);
+                rmqMsgs.add(message);
+            }
+
+            SendResult sendResult = producer.send(rmqMsgs, timeout);
+            long costTime = System.currentTimeMillis() - now;
+            if (log.isDebugEnabled()) {
+                log.debug("send messages cost: {} ms, msgId:{}", costTime, sendResult.getMsgId());
+            }
+            return sendResult;
+        } catch (Exception e) {
+            log.error("send sync with batch failed. topic:{}, messages.size:{} ", topic, messages.size());
+            throw new MessageSendException(e.getMessage(), e);
+        }
+    }
+
 
     /**
      *  异步发送消息到broker
      */
-    public void sendMessageAsync(String topic, Object req, SendCallback sendCallback)
+    public void sendAsync(String topic, Object req, SendCallback sendCallback)
             throws InterruptedException, RemotingException, MQClientException {
-        sendMessageAsync(topic, EMPTY, req, sendCallback);
+        sendAsync(topic, EMPTY, req, sendCallback);
     }
 
     /**
      *  异步发送消息到broker
      */
-    public void sendMessageAsync(String topic, String tags, Object req, SendCallback sendCallback)
+    public void sendAsync(String topic, String tags, Object req, SendCallback sendCallback)
             throws InterruptedException, RemotingException, MQClientException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
-        transactionMQProducer.send(message, sendCallback);
+        producer.send(message, sendCallback);
     }
 
     /**
@@ -166,7 +253,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
-        return transactionMQProducer.sendMessageInTransaction(message, arg);
+        return producer.sendMessageInTransaction(message, arg);
     }
 
     private synchronized void init() {
@@ -190,22 +277,22 @@ public class RMProducer  extends AbstractMQEndpoint {
 
         transactionListener.setMessageConverter(messageConverter);
 
-        transactionMQProducer = new TransactionMQProducer(producerGroup);
-        transactionMQProducer.setNamesrvAddr(nameSrvAddr);
-        transactionMQProducer.setExecutorService(executorService);
-        transactionMQProducer.setTransactionListener(transactionListener);
-        transactionMQProducer.setRetryTimesWhenSendFailed(retryTimes);
-        transactionMQProducer.setRetryTimesWhenSendAsyncFailed(retryTimes);
-        transactionMQProducer.setUnitName(unitName);
+        producer = new TransactionMQProducer(producerGroup);
+        producer.setNamesrvAddr(nameSrvAddr);
+        producer.setExecutorService(executorService);
+        producer.setTransactionListener(transactionListener);
+        producer.setRetryTimesWhenSendFailed(retryTimes);
+        producer.setRetryTimesWhenSendAsyncFailed(retryTimes);
+        producer.setUnitName(unitName);
 
         if (StringUtils.isNotEmpty(instanceName)) {
-            transactionMQProducer.setInstanceName(instanceName);
+            producer.setInstanceName(instanceName);
         }
 
-        //transactionMQProducer.setVipChannelEnabled(false);
-        transactionMQProducer.setSendMsgTimeout(10000);
+        //producer.setVipChannelEnabled(false);
+        producer.setSendMsgTimeout(10000);
         try {
-            transactionMQProducer.start();
+            producer.start();
         } catch (MQClientException e) {
             throw new RuntimeException("启动[生产者]RMProducer异常", e);
         }

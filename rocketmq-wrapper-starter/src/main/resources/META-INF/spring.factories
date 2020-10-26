@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration= io.andy.rocketmq.wrapper.starter.config.RocketMQAutoConfiguration
