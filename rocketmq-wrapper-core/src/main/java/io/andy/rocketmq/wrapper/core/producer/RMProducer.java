@@ -135,11 +135,7 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendSync(String topic, String tags, Object req)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
-        Message message = new Message(topic, tags, messageBody);
-        message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
-
-        return producer.send(message, producer.getSendMsgTimeout());
+        return sendSync(topic, tags,req, producer.getSendMsgTimeout());
     }
 
     /**
@@ -147,15 +143,43 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendSync(String topic, String tags, Object req, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        return sendSyncDelay(topic, tags, req, timeout, 0);
+    }
+
+    /**
+     *  同步发送某个topic的延迟消息到broker(delayLevel: 1~18)
+     */
+    public SendResult sendSyncDelay(String topic, Object req, int delayLevel)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        return sendSyncDelay(topic, EMPTY, req, producer.getSendMsgTimeout(), delayLevel);
+    }
+
+    /**
+     *  同步发送某个topic和tags的延迟消息到broker
+     */
+    public SendResult sendSyncDelay(String topic, String tags, Object req, int delayLevel)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        return sendSyncDelay(topic, tags, req, producer.getSendMsgTimeout(), delayLevel);
+    }
+
+    /**
+     *  同步发送某个topic和tags的延迟消息到broker，自定义发送超时时间
+     */
+    public SendResult sendSyncDelay(String topic, String tags, Object req, long timeout, int delayLevel)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
+        if (delayLevel > 0) {
+            message.setDelayTimeLevel(delayLevel);
+        }
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
         return producer.send(message, timeout);
     }
 
+
     /**
-     * send sync batch messages with default timeout.
+     * send sync batch messages with default sending timeout.
      *
      * @param topic message topic
      * @param messages Collection of {@link java.lang.Object}
@@ -166,7 +190,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     * send sync batch messages with default timeout.
+     * send sync batch messages with tags and default sending timeout.
      *
      * @param topic message topic
      * @param tags message tags
@@ -178,7 +202,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     * send sync batch messages in a given timeout.
+     * send sync batch messages with tags and a given sending timeout.
      *
      * @param topic message topic
      * @param tags message tags
