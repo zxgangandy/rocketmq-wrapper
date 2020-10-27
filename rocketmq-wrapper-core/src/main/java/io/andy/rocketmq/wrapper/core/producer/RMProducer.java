@@ -8,9 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.MessageQueueSelector;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
+import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
@@ -23,6 +25,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static io.andy.rocketmq.wrapper.core.constant.Constants.MSG_BODY_CLASS;
+
 
 @Slf4j
 public class RMProducer  extends AbstractMQEndpoint {
@@ -37,12 +40,26 @@ public class RMProducer  extends AbstractMQEndpoint {
     private TransactionMQProducer       producer;
     private AbstractTransactionListener transactionListener;
 
+    private MessageQueueSelector        messageQueueSelector = new SelectMessageQueueByHash();
+
+    /**
+     * @Description: 启动生产者
+     * @date 2020-10-27
+     *
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
+     */
     @Override
     public RMProducer start() {
         init();
         return this;
     }
 
+    /**
+     * @Description: 停止生产者
+     * @date 2020-10-27
+     *
+     * @return: void
+     */
     @Override
     public void stop() {
         if (executorService != null) {
@@ -57,7 +74,10 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  生产者name server地址设置
+     * @Description: 生产者name server地址设置
+     * @date 2020-10-27
+     * @Param nameSrvAddr:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
     @Override
     public RMProducer nameSrvAddr(String nameSrvAddr) {
@@ -66,7 +86,10 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  设置事务消息的监听器
+     * @Description: 设置事务消息的监听器
+     * @date 2020-10-27
+     * @Param transactionListener:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
     public RMProducer transactionListener(AbstractTransactionListener transactionListener) {
         this.transactionListener = transactionListener;
@@ -75,7 +98,10 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  生产者组设置
+     * @Description: 设置生产组
+     * @date 2020-10-27
+     * @Param producerGroup:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
     public RMProducer producerGroup(String producerGroup) {
         this.producerGroup = producerGroup;
@@ -83,7 +109,10 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  设置生产者unitName（可以实现一个jvm向不同集群发送消息）
+     * @Description: 设置生产者unitName（可以实现一个jvm向不同集群发送消息）
+     * @date 2020-10-27
+     * @Param unitName:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
     public RMProducer unitName(String unitName) {
         this.unitName = unitName;
@@ -91,15 +120,21 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  设置生产者instanceName（可以实现一个jvm向不同集群发送消息）
+     * @Description: 设置生产者instanceName（可以实现一个jvm向不同集群发送消息）
+     * @date 2020-10-27
+     * @Param instanceName: 实例名称
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
     public RMProducer instanceName(String instanceName) {
         this.instanceName = instanceName;
         return this;
     }
 
-    /**
-     *  生产者发送同步/异步消息重试次数设置
+    /***
+     * @Description: 生产者发送同步/异步消息重试次数设置
+     * @date 2020-10-27
+     * @Param retryTimes: 重试次数
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
     public RMProducer retryTimes(int retryTimes) {
         this.retryTimes = retryTimes;
@@ -107,7 +142,10 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  消息转换器设置
+     * @Description: 消息转换器设置
+     * @date 2020-10-27
+     * @Param messageConverter:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
     public RMProducer messageConverter(MessageConverter messageConverter) {
         this.messageConverter = messageConverter;
@@ -115,7 +153,11 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送消息到broker，采用默认的发送超时时间
+     * @Description: 同步发送消息到broker，采用默认的发送超时时间
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param req:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public SendResult sendSync(String topic, Object req)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -123,7 +165,12 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送某个topic的消息到broker，自定义发送超时时间
+     * @Description: 同步发送某个topic的消息到broker，自定义发送超时时间
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param req:
+     * @Param timeout:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public SendResult sendSync(String topic, Object req, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -131,7 +178,12 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送某个topic和tags的消息到broker
+     * @Description: 同步发送某个topic和tags的消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public SendResult sendSync(String topic, String tags, Object req)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -139,7 +191,13 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送某个topic和tags的消息到broker，自定义发送超时时间
+     * @Description: 同步发送某个topic和tags的消息到broker，自定义发送超时时间
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param timeout:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public SendResult sendSync(String topic, String tags, Object req, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -147,7 +205,12 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送某个topic的延迟消息到broker(delayLevel: 1~18)
+     * @Description: 同步发送某个topic的延迟消息到broker(delayLevel: 1~18)
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param req:
+     * @Param delayLevel:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public SendResult sendSyncDelay(String topic, Object req, int delayLevel)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -155,7 +218,13 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送某个topic和tags的延迟消息到broker
+     * @Description: 同步发送某个topic和tags的延迟消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param delayLevel:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public SendResult sendSyncDelay(String topic, String tags, Object req, int delayLevel)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -163,7 +232,14 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  同步发送某个topic和tags的延迟消息到broker，自定义发送超时时间
+     * @Description: 同步发送某个topic和tags的延迟消息到broker，自定义发送超时时间
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param timeout:
+     * @Param delayLevel:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public SendResult sendSyncDelay(String topic, String tags, Object req, long timeout, int delayLevel)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -179,7 +255,7 @@ public class RMProducer  extends AbstractMQEndpoint {
 
 
     /**
-     * send sync batch messages with default sending timeout.
+     * @Description: send sync batch messages with default sending timeout.
      *
      * @param topic message topic
      * @param messages Collection of {@link java.lang.Object}
@@ -190,7 +266,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     * send sync batch messages with tags and default sending timeout.
+     * @Description: send sync batch messages with tags and default sending timeout.
      *
      * @param topic message topic
      * @param tags message tags
@@ -241,9 +317,13 @@ public class RMProducer  extends AbstractMQEndpoint {
         }
     }
 
-
     /**
-     *  异步发送消息到broker
+     * @Description: 异步发送消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param req:
+     * @Param sendCallback:
+     * @return: void
      */
     public void sendAsync(String topic, Object req, SendCallback sendCallback)
             throws InterruptedException, RemotingException, MQClientException {
@@ -251,26 +331,148 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
-     *  异步发送消息到broker
+     * @Description: 异步发送消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param sendCallback:
+     * @return: void
      */
     public void sendAsync(String topic, String tags, Object req, SendCallback sendCallback)
+            throws InterruptedException, RemotingException, MQClientException {
+        sendAsync(topic, tags, req, sendCallback, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * @Description: 异步发送消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param req:
+     * @Param sendCallback:
+     * @Param timeout:
+     * @return: void
+     */
+    public void sendAsync(String topic, Object req, SendCallback sendCallback, long timeout)
+            throws InterruptedException, RemotingException, MQClientException {
+        sendAsync(topic, EMPTY, req, sendCallback, timeout);
+    }
+
+    /**
+     * @Description: 异步发送消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param sendCallback:
+     * @Param timeout:
+     * @return: void
+     */
+    public void sendAsync(String topic, String tags, Object req, SendCallback sendCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
-        producer.send(message, sendCallback);
+        producer.send(message, sendCallback, timeout);
     }
 
     /**
-     *  同步发送事务消息到broker
+     * @Description: 同步发送顺序消息
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param req:
+     * @Param key:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendOrderly(String topic, Object req, Object key)
+            throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        return sendOrderly(topic, EMPTY, req, messageQueueSelector, key, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * @Description: 同步发送顺序消息
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param key:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendOrderly(String topic, String tags, Object req, Object key)
+            throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        return sendOrderly(topic, tags, req, messageQueueSelector, key, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * @Description: 同步发送顺序消息
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param selector:
+     * @Param key:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendOrderly(String topic, String tags, Object req, MessageQueueSelector selector, Object key)
+            throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        return sendOrderly(topic, tags, req, selector, key, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * @Description: 同步发送顺序消息
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param key:
+     * @Param timeout:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendOrderly(String topic, String tags, Object req, Object key, long timeout)
+            throws MQClientException, RemotingException, MQBrokerException, InterruptedException{
+        return sendOrderly(topic, tags, req, messageQueueSelector, key, timeout);
+    }
+
+    /**
+     * @Description: 同步发送顺序消息
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param key: Argument to work along with message queue selector.（like product id, order id）
+     * @Param arg:
+     * @Param timeout:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendOrderly(String topic, String tags, Object req, MessageQueueSelector selector, Object key, long timeout)
+            throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
+        Message message = new Message(topic, tags, messageBody);
+        return producer.send(message, selector, key, timeout);
+    }
+
+
+    /**
+     * @Description: 同步发送事务消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param req:
+     * @Param arg:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public  SendResult sendTransactionMessage(String topic, Object req, Object arg)  throws  MQClientException{
        return sendTransactionMessage(topic, EMPTY, req, arg);
     }
 
     /**
-     *  同步发送事务消息到broker
+     * @Description: 同步发送事务消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param arg:
+     * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public  SendResult sendTransactionMessage(String topic, String tags, Object req, Object arg)  throws  MQClientException{
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
