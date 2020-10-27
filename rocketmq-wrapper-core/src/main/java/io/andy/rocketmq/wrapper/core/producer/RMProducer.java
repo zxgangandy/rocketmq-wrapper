@@ -35,6 +35,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     private String                      producerGroup;
     private String                      instanceName;
     private String                      unitName;
+    private volatile boolean            started;
 
     private ExecutorService             executorService;
     private TransactionMQProducer       producer;
@@ -50,6 +51,10 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     @Override
     public RMProducer start() {
+        if (started) {
+            throw new IllegalStateException("Producer started yet");
+        }
+
         init();
         return this;
     }
@@ -71,6 +76,8 @@ public class RMProducer  extends AbstractMQEndpoint {
             producer.shutdown();
             producer = null;
         }
+
+        started = false;
     }
 
     /**
@@ -452,29 +459,54 @@ public class RMProducer  extends AbstractMQEndpoint {
         return producer.send(message, selector, key, timeout);
     }
 
-
     /**
      * @Description: 同步发送事务消息到broker
      * @date 2020-10-27
-     * @Param topic:
-     * @Param req:
-     * @Param arg:
+     * @Param topic: topic
+     * @Param req:   消息body
+     * @Param arg:   扩展参数
      * @return: org.apache.rocketmq.client.producer.SendResult
      */
-    public  SendResult sendTransactionMessage(String topic, Object req, Object arg)  throws  MQClientException{
-       return sendTransactionMessage(topic, EMPTY, req, arg);
+    public  SendResult sendTransactional(String topic, Object req)  throws  MQClientException{
+        return sendTransactional(topic, EMPTY, req, null);
     }
 
     /**
      * @Description: 同步发送事务消息到broker
      * @date 2020-10-27
-     * @Param topic:
-     * @Param tags:
-     * @Param req:
-     * @Param arg:
+     * @Param topic: topic
+     * @Param req:   消息body
+     * @Param arg:   扩展参数
      * @return: org.apache.rocketmq.client.producer.SendResult
      */
-    public  SendResult sendTransactionMessage(String topic, String tags, Object req, Object arg)  throws  MQClientException{
+    public  SendResult sendTransactional(String topic, String tags, Object req)  throws  MQClientException{
+        return sendTransactional(topic, tags, req, null);
+    }
+
+    /**
+     * @Description: 同步发送事务消息到broker
+     * @date 2020-10-27
+     * @Param topic: topic
+     * @Param req:   消息body
+     * @Param arg:   扩展参数
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public  SendResult sendTransactional(String topic, Object req, Object arg)  throws  MQClientException{
+       return sendTransactional(topic, EMPTY, req, arg);
+    }
+
+    /**
+     * @Description: 同步发送事务消息到broker
+     * @date 2020-10-27
+     * @Param topic: topic
+     * @Param tags:  消息的二级分类
+     * @Param req:   消息body
+     * @Param arg:   扩展参数
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public  SendResult sendTransactional(String topic, String tags, Object req, Object arg)  throws  MQClientException{
+        Objects.requireNonNull(transactionListener);
+
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
@@ -482,11 +514,10 @@ public class RMProducer  extends AbstractMQEndpoint {
         return producer.sendMessageInTransaction(message, arg);
     }
 
-    private synchronized void init() {
-
+    private void init() {
+        started = true;
         Objects.requireNonNull(producerGroup);
         Objects.requireNonNull(nameSrvAddr);
-        Objects.requireNonNull(transactionListener);
 
         // 初始化回查线程池
         executorService = new ThreadPoolExecutor(
@@ -502,14 +533,17 @@ public class RMProducer  extends AbstractMQEndpoint {
                 });
 
         transactionListener.setMessageConverter(messageConverter);
-
         producer = new TransactionMQProducer(producerGroup);
         producer.setNamesrvAddr(nameSrvAddr);
         producer.setExecutorService(executorService);
-        producer.setTransactionListener(transactionListener);
+
         producer.setRetryTimesWhenSendFailed(retryTimes);
         producer.setRetryTimesWhenSendAsyncFailed(retryTimes);
         producer.setUnitName(unitName);
+
+        if (transactionListener != null) {
+            producer.setTransactionListener(transactionListener);
+        }
 
         if (StringUtils.isNotEmpty(instanceName)) {
             producer.setInstanceName(instanceName);
