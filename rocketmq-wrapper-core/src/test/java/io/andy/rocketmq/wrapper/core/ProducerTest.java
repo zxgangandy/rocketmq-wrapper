@@ -51,7 +51,7 @@ public class ProducerTest {
     @Test
     public void sendTxMsg() {
         try {
-            SendResult sendResult = producer.sendTransactionMessage("test", new MessageBody().setContent("c"), "d");
+            SendResult sendResult = producer.sendTransactional("test", new MessageBody().setContent("c"), "d");
             System.out.println("sendTxMsg, sendResult=" +sendResult);
         } catch (Exception e) {
             e.printStackTrace();

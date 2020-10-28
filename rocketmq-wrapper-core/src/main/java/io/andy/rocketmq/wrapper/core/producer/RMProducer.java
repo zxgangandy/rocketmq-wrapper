@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.andy.rocketmq.wrapper.core.constant.Constants.MSG_BODY_CLASS;
 
@@ -30,17 +31,18 @@ import static io.andy.rocketmq.wrapper.core.constant.Constants.MSG_BODY_CLASS;
 @Slf4j
 public class RMProducer  extends AbstractMQEndpoint {
     private static final String         EMPTY = StringUtils.EMPTY;
-    private int                         retryTimes      = 2;
+    private static final int            DEFAULT_SEND_MSG_TIMEOUT = 10000;
+    private int                         retryTimes = 2;
+    private int                         sendMsgTimeout = DEFAULT_SEND_MSG_TIMEOUT;
     private String                      nameSrvAddr;
     private String                      producerGroup;
     private String                      instanceName;
     private String                      unitName;
-    private volatile boolean            started;
+    private AtomicBoolean               started = new AtomicBoolean(false);;
 
-    private ExecutorService             executorService;
+    private ExecutorService             checkExecutorService;
     private TransactionMQProducer       producer;
     private AbstractTransactionListener transactionListener;
-
     private MessageQueueSelector        messageQueueSelector = new SelectMessageQueueByHash();
 
     /**
@@ -51,12 +53,12 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     @Override
     public RMProducer start() {
-        if (started) {
-            throw new IllegalStateException("Producer started yet");
+        if (started.compareAndSet(false, true)) {
+            init();
+            return this;
+        } else {
+            throw new IllegalStateException("Producer: " + producerGroup + "started yet!!");
         }
-
-        init();
-        return this;
     }
 
     /**
@@ -67,17 +69,15 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     @Override
     public void stop() {
-        if (executorService != null) {
-            executorService.shutdown();
-            executorService = null;
+        if (checkExecutorService != null) {
+            checkExecutorService.shutdown();
+            checkExecutorService = null;
         }
 
         if (producer != null) {
             producer.shutdown();
             producer = null;
         }
-
-        started = false;
     }
 
     /**
@@ -149,6 +149,17 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     /**
+     * @Description: 设置生产者发送消息的超时时间
+     * @date 2020-10-28
+     * @Param sendMsgTimeout:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
+     */
+    public RMProducer sendMsgTimeout(int sendMsgTimeout) {
+        this.sendMsgTimeout = sendMsgTimeout;
+        return this;
+    }
+
+    /**
      * @Description: 消息转换器设置
      * @date 2020-10-27
      * @Param messageConverter:
@@ -156,6 +167,17 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public RMProducer messageConverter(MessageConverter messageConverter) {
         this.messageConverter = messageConverter;
+        return this;
+    }
+
+    /**
+     * @Description: 设置事务消息的回查线程池
+     * @date 2020-10-28
+     * @Param executorService:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
+     */
+    public RMProducer setCheckExecutorService(ExecutorService executorService) {
+        this.checkExecutorService = executorService;
         return this;
     }
 
@@ -505,7 +527,9 @@ public class RMProducer  extends AbstractMQEndpoint {
      * @return: org.apache.rocketmq.client.producer.SendResult
      */
     public  SendResult sendTransactional(String topic, String tags, Object req, Object arg)  throws  MQClientException{
-        Objects.requireNonNull(transactionListener);
+        if (producer.getTransactionListener() == null) {
+            throw new IllegalStateException("The TransactionMQProducer does not exist TransactionListener");
+        }
 
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
         Message message = new Message(topic, tags, messageBody);
@@ -514,35 +538,28 @@ public class RMProducer  extends AbstractMQEndpoint {
         return producer.sendMessageInTransaction(message, arg);
     }
 
+    /**
+     * @Description: init producer configuration
+     * @date 2020-10-27
+     *
+     * @return: void
+     */
     private void init() {
-        started = true;
         Objects.requireNonNull(producerGroup);
         Objects.requireNonNull(nameSrvAddr);
 
-        // 初始化回查线程池
-        executorService = new ThreadPoolExecutor(
-                5,
-                512,
-                10000L,
-                TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(512),
-                runnable -> {
-                    Thread thread = new Thread(runnable);
-                    thread.setName(producerGroup + "-check-thread");
-                    return null;
-                });
 
         transactionListener.setMessageConverter(messageConverter);
         producer = new TransactionMQProducer(producerGroup);
         producer.setNamesrvAddr(nameSrvAddr);
-        producer.setExecutorService(executorService);
+
 
         producer.setRetryTimesWhenSendFailed(retryTimes);
         producer.setRetryTimesWhenSendAsyncFailed(retryTimes);
         producer.setUnitName(unitName);
 
         if (transactionListener != null) {
-            producer.setTransactionListener(transactionListener);
+            initTransactionEnv();
         }
 
         if (StringUtils.isNotEmpty(instanceName)) {
@@ -550,7 +567,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         }
 
         //producer.setVipChannelEnabled(false);
-        producer.setSendMsgTimeout(10000);
+        producer.setSendMsgTimeout(sendMsgTimeout);
         try {
             producer.start();
         } catch (MQClientException e) {
@@ -559,5 +576,31 @@ public class RMProducer  extends AbstractMQEndpoint {
         log.info("启动[生产者]RMProducer成功");
     }
 
+    /**
+     * @Description: 初始化事务消息生产者相关配置
+     * @date 2020-10-27
+     *
+     * @return: void
+     */
+    private void initTransactionEnv() {
+        producer.setTransactionListener(transactionListener);
+
+        // 初始化回查线程池
+        if (checkExecutorService == null) {
+            checkExecutorService = new ThreadPoolExecutor(
+                    5,
+                    512,
+                    10000L,
+                    TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<>(512),
+                    runnable -> {
+                        Thread thread = new Thread(runnable);
+                        thread.setName(producerGroup + "-check-thread");
+                        return null;
+                    });
+        }
+
+        producer.setExecutorService(checkExecutorService);
+    }
 
 }
