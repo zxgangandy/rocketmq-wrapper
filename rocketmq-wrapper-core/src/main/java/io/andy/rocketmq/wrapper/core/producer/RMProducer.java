@@ -600,12 +600,6 @@ public class RMProducer  extends AbstractMQEndpoint {
         return producer.sendMessageInTransaction(message, arg);
     }
 
-    /**
-     * @Description: init producer configuration
-     * @date 2020-10-27
-     *
-     * @return: void
-     */
     private void init() {
         Objects.requireNonNull(producerGroup);
         Objects.requireNonNull(nameSrvAddr);
@@ -627,12 +621,6 @@ public class RMProducer  extends AbstractMQEndpoint {
         }
     }
 
-    /**
-     * @Description: 初始化事务消息生产者相关配置
-     * @date 2020-10-27
-     *
-     * @return: void
-     */
     private void initTransactionEnv() {
         transactionListener.setMessageConverter(messageConverter);
         ((TransactionMQProducer)producer).setTransactionListener(transactionListener);
@@ -645,12 +633,6 @@ public class RMProducer  extends AbstractMQEndpoint {
         ((TransactionMQProducer)producer).setExecutorService(checkExecutorService);
     }
 
-    /**
-     * @Description: 默认的CheckExecutorService
-     * @date 2020-10-29
-     *
-     * @return: java.util.concurrent.ExecutorService
-     */
     private ExecutorService getDefaultCheckExecutorService() {
         return new ThreadPoolExecutor(
                 5,
@@ -665,12 +647,6 @@ public class RMProducer  extends AbstractMQEndpoint {
                 });
     }
 
-    /**
-     * @Description: 检查是否配置ACL
-     * @date 2020-10-29
-     *
-     * @return: boolean
-     */
     private boolean enabledAcl() {
         return !StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(secretKey);
     }
@@ -687,24 +663,24 @@ public class RMProducer  extends AbstractMQEndpoint {
             producer = new TransactionMQProducer(producerGroup);
         }
 
-        enableMsgTrace(enabledAcl, customizedTraceTopic);
+        enableMsgTrace(enableMsgTrace, enabledAcl, customizedTraceTopic);
     }
 
 
-    private void enableMsgTrace(boolean enabledAcl, String customizedTraceTopic) {
+    private void enableMsgTrace(boolean enableMsgTrace, boolean enabledAcl, String customizedTraceTopic) {
         if (enableMsgTrace) {
             try {
                 AsyncTraceDispatcher dispatcher = new AsyncTraceDispatcher(producerGroup,
                         TraceDispatcher.Type.PRODUCE, customizedTraceTopic,
                         enabledAcl ? new AclClientRPCHook(new SessionCredentials(accessKey, secretKey)) : null);
                 dispatcher.setHostProducer(producer.getDefaultMQProducerImpl());
+
                 Field field = DefaultMQProducer.class.getDeclaredField("traceDispatcher");
                 field.setAccessible(true);
                 field.set(producer, dispatcher);
-                producer.getDefaultMQProducerImpl().registerSendMessageHook(
-                        new SendMessageTraceHookImpl(dispatcher));
+                producer.getDefaultMQProducerImpl().registerSendMessageHook(new SendMessageTraceHookImpl(dispatcher));
             } catch (Throwable e) {
-                log.error("system trace hook init failed ,maybe can't send msg trace data");
+                log.error("Message trace hook init failed ,maybe can't send message trace data");
             }
         }
     }
