@@ -24,6 +24,8 @@ import java.util.Objects;
  */
 @Slf4j
 public class RMConsumer extends AbstractMQEndpoint {
+    private boolean                        enableMsgTrace;
+
     private String                         nameSrvAddr;
     private String                         consumerGroup;
 
@@ -56,6 +58,22 @@ public class RMConsumer extends AbstractMQEndpoint {
     @Override
     public RMConsumer nameSrvAddr(String nameSrvAddr) {
         this.nameSrvAddr = nameSrvAddr;
+        return this;
+    }
+
+    public RMConsumer enableMsgTrace(boolean enableMsgTrace) {
+        this.enableMsgTrace = enableMsgTrace;
+        return this;
+    }
+
+    /**
+     * @Description: 设置customizedTraceTopic
+     * @date 2020-10-29
+     * @Param customizedTraceTopic:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
+     */
+    public RMConsumer customizedTraceTopic(String customizedTraceTopic) {
+        this.customizedTraceTopic = customizedTraceTopic;
         return this;
     }
 
@@ -110,10 +128,20 @@ public class RMConsumer extends AbstractMQEndpoint {
         try {
             pushConsumer.subscribe(topic, "*");
         } catch (MQClientException e) {
-            log.error("[消息消费者]--RMConsumer订阅异常!e={}", e);
-            throw new IllegalStateException("[消息消费者]--RMConsumer加载异常!", e);
+            log.error("RMConsumer订阅异常， e={}", e);
+            throw new IllegalStateException("RMConsumer订阅异常", e);
         }
         return this;
+    }
+
+    /**
+     * @Description: 取消订阅topic消息
+     * @date 2020-10-30
+     * @Param topic:
+     * @return: void
+     */
+    public void unsubscribe(String topic) {
+        pushConsumer.unsubscribe(topic);
     }
 
     /**
@@ -123,14 +151,14 @@ public class RMConsumer extends AbstractMQEndpoint {
         try {
             pushConsumer.subscribe(topic, subExpression);
         } catch (MQClientException e) {
-            log.error("[消息消费者]--RMConsumer订阅异常!e={}", e);
-            throw new IllegalStateException("[消息消费者]--RMConsumer加载异常!", e);
+            log.error("RMConsumer订阅异常， e={}", e);
+            throw new IllegalStateException("RMConsumer订阅异常", e);
         }
         return this;
     }
 
     private void init() {
-        pushConsumer = new DefaultMQPushConsumer(consumerGroup);
+        pushConsumer = new DefaultMQPushConsumer(consumerGroup, enableMsgTrace, customizedTraceTopic);
     }
 
     private void startConsumer() {

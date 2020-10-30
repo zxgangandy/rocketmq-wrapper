@@ -48,7 +48,6 @@ public class RMProducer  extends AbstractMQEndpoint {
     private String                      unitName;
     private String                      accessKey;
     private String                      secretKey;
-    private String                      customizedTraceTopic = TopicValidator.RMQ_SYS_TRACE_TOPIC;
 
     private ExecutorService             checkExecutorService;
     private DefaultMQProducer           producer;
