@@ -16,7 +16,6 @@ import org.apache.rocketmq.client.trace.AsyncTraceDispatcher;
 import org.apache.rocketmq.client.trace.TraceDispatcher;
 import org.apache.rocketmq.client.trace.hook.SendMessageTraceHookImpl;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
 import java.lang.reflect.Field;
@@ -239,6 +238,17 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public RMProducer setCheckExecutorService(ExecutorService executorService) {
         this.checkExecutorService = executorService;
+        return this;
+    }
+
+    /**
+     * @Description: 自定义MessageQueueSelector（适用于顺序消息）
+     * @date 2020-10-31
+     * @Param messageQueueSelector:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
+     */
+    public RMProducer messageQueueSelector(MessageQueueSelector messageQueueSelector) {
+        this.messageQueueSelector = messageQueueSelector;
         return this;
     }
 
