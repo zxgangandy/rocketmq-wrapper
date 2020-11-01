@@ -38,12 +38,24 @@ public class RMConsumer extends AbstractMQEndpoint {
         init();
     }
 
+    /**
+     * @Description: 启动消费者
+     * @date 2020-11-01
+     *
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
+     */
     @Override
     public RMConsumer start() {
         startConsumer();
         return this;
     }
 
+    /**
+     * @Description: 停止消费者
+     * @date 2020-11-01
+     *
+     * @return: void
+     */
     @Override
     public void stop() {
         if (pushConsumer != null) {
@@ -61,6 +73,12 @@ public class RMConsumer extends AbstractMQEndpoint {
         return this;
     }
 
+    /**
+     * @Description: 是否开启消息轨迹
+     * @date 2020-11-01
+     * @Param enableMsgTrace:
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
+     */
     public RMConsumer enableMsgTrace(boolean enableMsgTrace) {
         this.enableMsgTrace = enableMsgTrace;
         return this;
@@ -122,11 +140,31 @@ public class RMConsumer extends AbstractMQEndpoint {
     }
 
     /**
-     *  订阅消息
+     * Subscribe a topic to consuming subscription.
+     *
+     * @param topic topic to subscribe.
+     * Use default subscription, * expression,meaning subscribe all
      */
     public RMConsumer subscribe(String topic) {
         try {
             pushConsumer.subscribe(topic, "*");
+        } catch (MQClientException e) {
+            log.error("RMConsumer订阅异常， e={}", e);
+            throw new IllegalStateException("RMConsumer订阅异常", e);
+        }
+        return this;
+    }
+
+    /**
+     * Subscribe a topic to consuming subscription.
+     *
+     * @param topic topic to subscribe.
+     * @param subExpression subscription expression.it only support or operation such as "tag1 || tag2 || tag3" <br>
+     * if null or * expression,meaning subscribe all
+     */
+    public RMConsumer subscribe(String topic, String subExpression) {
+        try {
+            pushConsumer.subscribe(topic, subExpression);
         } catch (MQClientException e) {
             log.error("RMConsumer订阅异常， e={}", e);
             throw new IllegalStateException("RMConsumer订阅异常", e);
@@ -142,19 +180,6 @@ public class RMConsumer extends AbstractMQEndpoint {
      */
     public void unsubscribe(String topic) {
         pushConsumer.unsubscribe(topic);
-    }
-
-    /**
-     * 订阅消息
-     */
-    public RMConsumer subscribe(String topic, String subExpression) {
-        try {
-            pushConsumer.subscribe(topic, subExpression);
-        } catch (MQClientException e) {
-            log.error("RMConsumer订阅异常， e={}", e);
-            throw new IllegalStateException("RMConsumer订阅异常", e);
-        }
-        return this;
     }
 
     private void init() {
