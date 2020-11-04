@@ -334,12 +334,13 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      * @Description: 同步发送某个topic和tags的延迟消息到broker，自定义发送超时时间
      * @date 2020-10-27
-     * @Param topic:
-     * @Param tags:
-     * @Param req:
-     * @Param timeout:
-     * @Param delayLevel:
-     * @return: org.apache.rocketmq.client.producer.SendResult
+     * @Param topic:      topic
+     * @Param tags:       tags
+     * @Param req:        消息体
+     * @Param timeout:    超时
+     * @Param delayLevel: 延时等级：现在RocketMq并不支持任意时间的延时，需要设置几个固定的延时等级，
+     *                            从1s到2h分别对应着等级 1 到 18，消息消费失败会进入延时消息队列
+     *                            "1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h"
      */
     public SendResult sendSyncDelay(String topic, String tags, Object req, long timeout, int delayLevel)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {

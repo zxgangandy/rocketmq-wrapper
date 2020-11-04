@@ -54,7 +54,7 @@ public class ConsumerConcurrentlyListener implements MessageListenerConcurrently
         Object message = messageConverter.fromMessageBody(msg.getBody(), messageBodyClazz);
         log.debug("msgId={}, 消费者接收到消息, message={}", msgId, message);
 
-        return messageProcessor.process(msg, message);
+        return messageProcessor.process(message);
     }
 
 

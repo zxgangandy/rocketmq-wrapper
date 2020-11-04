@@ -5,5 +5,5 @@ import org.apache.rocketmq.common.message.MessageExt;
 
 public interface ConcurrentlyMessageProcessor<T> {
 
-    ConsumeConcurrentlyStatus process(MessageExt rawMsg, T messageBody);
+    ConsumeConcurrentlyStatus process(T messageBody);
 }

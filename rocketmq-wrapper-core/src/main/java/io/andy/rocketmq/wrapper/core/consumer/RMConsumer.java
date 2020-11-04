@@ -32,6 +32,7 @@ public class RMConsumer extends AbstractMQEndpoint {
     private OrderlyMessageProcessor        orderlyProcessor;
     private ConcurrentlyMessageProcessor   concurrentlyProcessor;
     private MessageModel                   messageModel = MessageModel.CLUSTERING;
+    private ConsumeFromWhere               consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET;
     private DefaultMQPushConsumer          pushConsumer;
 
     public RMConsumer() {
@@ -140,6 +141,19 @@ public class RMConsumer extends AbstractMQEndpoint {
     }
 
     /**
+     * @Description: 设置消费点
+     * @date 2020-11-04
+     * @Param consumeFromWhere:
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
+     */
+    public RMConsumer consumeFromWhere(ConsumeFromWhere consumeFromWhere) {
+        this.consumeFromWhere = consumeFromWhere;
+
+        return this;
+    }
+
+
+    /**
      * Subscribe a topic to consuming subscription.
      *
      * @param topic topic to subscribe.
@@ -191,7 +205,7 @@ public class RMConsumer extends AbstractMQEndpoint {
         Objects.requireNonNull(nameSrvAddr);
 
         pushConsumer.setNamesrvAddr(nameSrvAddr);
-        pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
+        pushConsumer.setConsumeFromWhere(consumeFromWhere);
         pushConsumer.setMessageModel(messageModel);
 
         final MessageConverter messageConverter = getRequiredMessageConverter();
