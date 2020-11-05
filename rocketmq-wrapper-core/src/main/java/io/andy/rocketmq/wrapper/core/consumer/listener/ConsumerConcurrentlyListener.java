@@ -9,7 +9,9 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
 
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Objects;
 
 import static io.andy.rocketmq.wrapper.core.utils.ReflectUtils.getMessageType;
 
@@ -21,6 +23,7 @@ import static io.andy.rocketmq.wrapper.core.utils.ReflectUtils.getMessageType;
 
 public class ConsumerConcurrentlyListener implements MessageListenerConcurrently {
 
+    private String                       charset = "UTF-8";
     private ConcurrentlyMessageProcessor messageProcessor;
     private MessageConverter             messageConverter;
     private Class<?>                     messageBodyClazz;
@@ -51,13 +54,19 @@ public class ConsumerConcurrentlyListener implements MessageListenerConcurrently
      * 处理收到的消息
      */
     private ConsumeConcurrentlyStatus handleMessage(MessageExt msg, String msgId) {
-        Object message = messageConverter.fromMessageBody(msg.getBody(), messageBodyClazz);
-        log.debug("msgId={}, 消费者接收到消息, message={}", msgId, message);
+        if (Objects.equals(messageBodyClazz, MessageExt.class)) {
+            return messageProcessor.process(msg);
+        } else {
+            if (Objects.equals(messageBodyClazz, String.class)) {
+                String str = new String(msg.getBody(), Charset.forName(charset));
+                return messageProcessor.process(str);
+            } else {
+                Object message = messageConverter.fromMessageBody(msg.getBody(), messageBodyClazz);
+                log.debug("msgId={}, 消费者接收到消息, message={}", msgId, message);
 
-        return messageProcessor.process(message);
+                return messageProcessor.process(message);
+            }
+        }
     }
-
-
-
 
 }
