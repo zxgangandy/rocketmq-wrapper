@@ -17,10 +17,12 @@ import org.apache.rocketmq.client.trace.TraceDispatcher;
 import org.apache.rocketmq.client.trace.hook.SendMessageTraceHookImpl;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -301,7 +303,21 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendSync(String topic, String tags, Object req, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        return sendSyncDelay(topic, tags, req, timeout, 0);
+        return sendSyncDelay(topic, tags, EMPTY, req, timeout, 0);
+    }
+
+    /**
+     * @Description: 同步发送某个topic和tags的消息到broker，自定义发送超时时间
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param timeout:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendSync(String topic, String tags, String keys, Object req, long timeout)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        return sendSyncDelay(topic, tags, keys, req, timeout, 0);
     }
 
     /**
@@ -314,7 +330,7 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendSyncDelay(String topic, Object req, int delayLevel)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        return sendSyncDelay(topic, EMPTY, req, producer.getSendMsgTimeout(), delayLevel);
+        return sendSyncDelay(topic, EMPTY, EMPTY, req, producer.getSendMsgTimeout(), delayLevel);
     }
 
     /**
@@ -328,7 +344,21 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendSyncDelay(String topic, String tags, Object req, int delayLevel)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        return sendSyncDelay(topic, tags, req, producer.getSendMsgTimeout(), delayLevel);
+        return sendSyncDelay(topic, tags, EMPTY, req, producer.getSendMsgTimeout(), delayLevel);
+    }
+
+    /**
+     * @Description: 同步发送某个topic和tags的延迟消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param delayLevel:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendSyncDelay(String topic, String tags, String keys, Object req, int delayLevel)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        return sendSyncDelay(topic, tags, keys, req, producer.getSendMsgTimeout(), delayLevel);
     }
 
     /**
@@ -342,10 +372,10 @@ public class RMProducer  extends AbstractMQEndpoint {
      *                            从1s到2h分别对应着等级 1 到 18，消息消费失败会进入延时消息队列
      *                            "1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h"
      */
-    public SendResult sendSyncDelay(String topic, String tags, Object req, long timeout, int delayLevel)
+    public SendResult sendSyncDelay(String topic, String tags, String keys, Object req, long timeout, int delayLevel)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
-        Message message = new Message(topic, tags, messageBody);
+        Message message = new Message(topic, tags, keys, messageBody);
         if (delayLevel > 0) {
             message.setDelayTimeLevel(delayLevel);
         }
@@ -363,7 +393,7 @@ public class RMProducer  extends AbstractMQEndpoint {
      * @return {@link SendResult}
      */
     public  SendResult sendBatchSync(String topic, Collection<Object> messages) {
-        return sendBatchSync(topic, EMPTY, messages, producer.getSendMsgTimeout());
+        return sendBatchSync(topic, EMPTY, messages, null, producer.getSendMsgTimeout());
     }
 
     /**
@@ -375,7 +405,19 @@ public class RMProducer  extends AbstractMQEndpoint {
      * @return {@link SendResult}
      */
     public  SendResult sendBatchSync(String topic, String tags, Collection<Object> messages) {
-        return sendBatchSync(topic, tags, messages, producer.getSendMsgTimeout());
+        return sendBatchSync(topic, tags, messages, null, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * @Description: send sync batch messages with tags and default sending timeout.
+     *
+     * @param topic message topic
+     * @param tags message tags
+     * @param messages Collection of {@link java.lang.Object}
+     * @return {@link SendResult}
+     */
+    public  SendResult sendBatchSync(String topic, String tags, Collection<Object> messages, List<String> keyList) {
+        return sendBatchSync(topic, tags, messages, keyList, producer.getSendMsgTimeout());
     }
 
     /**
@@ -387,15 +429,21 @@ public class RMProducer  extends AbstractMQEndpoint {
      * @param timeout send timeout with millis
      * @return {@link SendResult}
      */
-    public  SendResult sendBatchSync(String topic, String tags, Collection<Object> messages, long timeout) {
+    public  SendResult sendBatchSync(String topic, String tags, Collection<Object> messages, List<String> keyList, long timeout) {
         if (Objects.isNull(messages) || messages.size() == 0) {
             log.error("send sync with batch failed. topic:{}, messages is empty ", topic);
             throw new IllegalArgumentException("`messages` can not be empty");
         }
 
+        boolean shouldSetKeys = true;
+        if (CollectionUtils.isEmpty(keyList) || messages.size() != keyList.size()) {
+            shouldSetKeys = false;
+        }
+
         try {
             long now = System.currentTimeMillis();
             Collection<Message> rmqMsgs = new ArrayList<>();
+            int count = 0;
             for (Object msg : messages) {
                 if (Objects.isNull(msg)) {
                     log.warn("Found a message empty in the batch, skip it");
@@ -403,7 +451,12 @@ public class RMProducer  extends AbstractMQEndpoint {
                 }
                 byte[] messageBody = getRequiredMessageConverter().toMessageBody(msg);
                 Message message = new Message(topic, tags, messageBody);
+                if (shouldSetKeys) {
+                    message.setKeys(keyList.get(count));
+                }
+
                 rmqMsgs.add(message);
+                count ++;
             }
 
             SendResult sendResult = producer.send(rmqMsgs, timeout);
@@ -449,6 +502,20 @@ public class RMProducer  extends AbstractMQEndpoint {
      * @Description: 异步发送消息到broker
      * @date 2020-10-27
      * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param sendCallback:
+     * @return: void
+     */
+    public void sendAsync(String topic, String tags, String keys, Object req, SendCallback sendCallback)
+            throws InterruptedException, RemotingException, MQClientException {
+        sendAsync(topic, tags, keys, req, sendCallback, producer.getSendMsgTimeout());
+    }
+
+    /**
+     * @Description: 异步发送消息到broker
+     * @date 2020-10-27
+     * @Param topic:
      * @Param req:
      * @Param sendCallback:
      * @Param timeout:
@@ -471,8 +538,23 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public void sendAsync(String topic, String tags, Object req, SendCallback sendCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException {
+        sendAsync(topic, tags, EMPTY, req, sendCallback, timeout);
+    }
+
+    /**
+     * @Description: 异步发送消息到broker
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param sendCallback:
+     * @Param timeout:
+     * @return: void
+     */
+    public void sendAsync(String topic, String tags, String keys, Object req, SendCallback sendCallback, long timeout)
+            throws InterruptedException, RemotingException, MQClientException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
-        Message message = new Message(topic, tags, messageBody);
+        Message message = new Message(topic, tags, keys, messageBody);
         message.putUserProperty(MSG_BODY_CLASS, req.getClass().getName());
 
         producer.send(message, sendCallback, timeout);
@@ -488,7 +570,7 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendOrderly(String topic, Object req, Object key)
             throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
-        return sendOrderly(topic, EMPTY, req, messageQueueSelector, key, producer.getSendMsgTimeout());
+        return sendOrderly(topic, EMPTY, EMPTY, req, messageQueueSelector, key, producer.getSendMsgTimeout());
     }
 
     /**
@@ -502,7 +584,7 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendOrderly(String topic, String tags, Object req, Object key)
             throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
-        return sendOrderly(topic, tags, req, messageQueueSelector, key, producer.getSendMsgTimeout());
+        return sendOrderly(topic, tags, EMPTY, req, messageQueueSelector, key, producer.getSendMsgTimeout());
     }
 
     /**
@@ -517,7 +599,7 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendOrderly(String topic, String tags, Object req, MessageQueueSelector selector, Object key)
             throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
-        return sendOrderly(topic, tags, req, selector, key, producer.getSendMsgTimeout());
+        return sendOrderly(topic, tags, EMPTY, req, selector, key, producer.getSendMsgTimeout());
     }
 
     /**
@@ -532,7 +614,22 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public SendResult sendOrderly(String topic, String tags, Object req, Object key, long timeout)
             throws MQClientException, RemotingException, MQBrokerException, InterruptedException{
-        return sendOrderly(topic, tags, req, messageQueueSelector, key, timeout);
+        return sendOrderly(topic, tags, EMPTY, req, messageQueueSelector, key, timeout);
+    }
+
+    /**
+     * @Description: 同步发送顺序消息
+     * @date 2020-10-27
+     * @Param topic:
+     * @Param tags:
+     * @Param req:
+     * @Param key:
+     * @Param timeout:
+     * @return: org.apache.rocketmq.client.producer.SendResult
+     */
+    public SendResult sendOrderly(String topic, String tags, String keys, Object req, Object key, long timeout)
+            throws MQClientException, RemotingException, MQBrokerException, InterruptedException{
+        return sendOrderly(topic, tags, keys, req, messageQueueSelector, key, timeout);
     }
 
     /**
@@ -546,10 +643,10 @@ public class RMProducer  extends AbstractMQEndpoint {
      * @Param timeout:
      * @return: org.apache.rocketmq.client.producer.SendResult
      */
-    public SendResult sendOrderly(String topic, String tags, Object req, MessageQueueSelector selector, Object key, long timeout)
+    public SendResult sendOrderly(String topic, String tags, String keys, Object req, MessageQueueSelector selector, Object key, long timeout)
             throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
         byte[] messageBody = getRequiredMessageConverter().toMessageBody(req);
-        Message message = new Message(topic, tags, messageBody);
+        Message message = new Message(topic, tags, keys, messageBody);
         return producer.send(message, selector, key, timeout);
     }
 
