@@ -1,7 +1,7 @@
 package io.andy.rocketmq.wrapper.core.consumer.listener;
 
 
-import io.andy.rocketmq.wrapper.core.consumer.processor.OrderlyMessageProcessor;
+import io.andy.rocketmq.wrapper.core.consumer.processor.OrderlyProcessor;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.listener.ConsumeOrderlyContext;
@@ -19,16 +19,16 @@ import static io.andy.rocketmq.wrapper.core.utils.ReflectUtils.getMessageType;
  * @desc 顺序消息消费监听回调实现
  */
 @Slf4j
-public class ConsumerOrderlyListener implements MessageListenerOrderly {
+public class OrderlyListener implements MessageListenerOrderly {
 
-    private OrderlyMessageProcessor      messageProcessor;
+    private OrderlyProcessor messageProcessor;
     private MessageConverter             messageConverter;
     private Class<?>                     messageBodyClazz;
 
-    public ConsumerOrderlyListener(OrderlyMessageProcessor messageProcessor, MessageConverter messageConverter) {
+    public OrderlyListener(OrderlyProcessor messageProcessor, MessageConverter messageConverter) {
         this.messageProcessor = messageProcessor;
         this.messageConverter = messageConverter;
-        this.messageBodyClazz = getMessageType(this.messageProcessor, OrderlyMessageProcessor.class);
+        this.messageBodyClazz = getMessageType(this.messageProcessor, OrderlyProcessor.class);
     }
 
     @Override

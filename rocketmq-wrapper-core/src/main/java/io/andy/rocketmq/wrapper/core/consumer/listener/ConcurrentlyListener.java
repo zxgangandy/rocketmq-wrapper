@@ -1,7 +1,7 @@
 package io.andy.rocketmq.wrapper.core.consumer.listener;
 
 
-import io.andy.rocketmq.wrapper.core.consumer.processor.ConcurrentlyMessageProcessor;
+import io.andy.rocketmq.wrapper.core.consumer.processor.ConcurrentlyProcessor;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -21,17 +21,17 @@ import static io.andy.rocketmq.wrapper.core.utils.ReflectUtils.getMessageType;
  */
 @Slf4j
 
-public class ConsumerConcurrentlyListener implements MessageListenerConcurrently {
+public class ConcurrentlyListener implements MessageListenerConcurrently {
 
     private String                       charset = "UTF-8";
-    private ConcurrentlyMessageProcessor messageProcessor;
+    private ConcurrentlyProcessor messageProcessor;
     private MessageConverter             messageConverter;
     private Class<?>                     messageBodyClazz;
 
-    public ConsumerConcurrentlyListener(ConcurrentlyMessageProcessor messageProcessor, MessageConverter messageConverter) {
+    public ConcurrentlyListener(ConcurrentlyProcessor messageProcessor, MessageConverter messageConverter) {
         this.messageProcessor = messageProcessor;
         this.messageConverter = messageConverter;
-        this.messageBodyClazz = getMessageType(this.messageProcessor, ConcurrentlyMessageProcessor.class);
+        this.messageBodyClazz = getMessageType(this.messageProcessor, ConcurrentlyProcessor.class);
     }
 
     @Override

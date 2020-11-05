@@ -2,10 +2,10 @@ package io.andy.rocketmq.wrapper.core.consumer;
 
 import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
 
-import io.andy.rocketmq.wrapper.core.consumer.listener.ConsumerConcurrentlyListener;
-import io.andy.rocketmq.wrapper.core.consumer.listener.ConsumerOrderlyListener;
-import io.andy.rocketmq.wrapper.core.consumer.processor.ConcurrentlyMessageProcessor;
-import io.andy.rocketmq.wrapper.core.consumer.processor.OrderlyMessageProcessor;
+import io.andy.rocketmq.wrapper.core.consumer.listener.ConcurrentlyListener;
+import io.andy.rocketmq.wrapper.core.consumer.listener.OrderlyListener;
+import io.andy.rocketmq.wrapper.core.consumer.processor.ConcurrentlyProcessor;
+import io.andy.rocketmq.wrapper.core.consumer.processor.OrderlyProcessor;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -29,8 +29,8 @@ public class RMConsumer extends AbstractMQEndpoint {
     private String                         nameSrvAddr;
     private String                         consumerGroup;
 
-    private OrderlyMessageProcessor        orderlyProcessor;
-    private ConcurrentlyMessageProcessor   concurrentlyProcessor;
+    private OrderlyProcessor               orderlyProcessor;
+    private ConcurrentlyProcessor          concurrentlyProcessor;
     private MessageModel                   messageModel = MessageModel.CLUSTERING;
     private ConsumeFromWhere               consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET;
     private DefaultMQPushConsumer          pushConsumer;
@@ -107,7 +107,7 @@ public class RMConsumer extends AbstractMQEndpoint {
     /**
      *  消费者单序消息处理器设置
      */
-    public RMConsumer orderlyProcessor(OrderlyMessageProcessor orderlyProcessor) {
+    public RMConsumer orderlyProcessor(OrderlyProcessor orderlyProcessor) {
         this.orderlyProcessor = orderlyProcessor;
 
         return this;
@@ -116,7 +116,7 @@ public class RMConsumer extends AbstractMQEndpoint {
     /**
      *  消费者并发消息处理器设置
      */
-    public RMConsumer concurrentlyProcessor(ConcurrentlyMessageProcessor concurrentlyProcessor) {
+    public RMConsumer concurrentlyProcessor(ConcurrentlyProcessor concurrentlyProcessor) {
         this.concurrentlyProcessor = concurrentlyProcessor;
 
         return this;
@@ -212,10 +212,10 @@ public class RMConsumer extends AbstractMQEndpoint {
 
         if (Objects.nonNull(orderlyProcessor)) {
             pushConsumer.registerMessageListener(
-                    new ConsumerOrderlyListener(orderlyProcessor, messageConverter));
+                    new OrderlyListener(orderlyProcessor, messageConverter));
         } else if (Objects.nonNull(concurrentlyProcessor)){
             pushConsumer.registerMessageListener(
-                    new ConsumerConcurrentlyListener(concurrentlyProcessor, messageConverter));
+                    new ConcurrentlyListener(concurrentlyProcessor, messageConverter));
         } else {
             throw new IllegalStateException("Consumer message listener not initialized yet!!");
         }
