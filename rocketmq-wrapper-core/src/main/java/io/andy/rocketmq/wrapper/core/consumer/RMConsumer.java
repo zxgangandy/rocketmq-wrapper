@@ -97,15 +97,21 @@ public class RMConsumer extends AbstractMQEndpoint {
     }
 
     /**
-     *  消费者消费组设置
+     * @Description: 消费者消费组设置
+     * @date 2020-11-10
+     * @Param consumerGroup:
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
      */
     public RMConsumer consumerGroup(String consumerGroup) {
         this.consumerGroup = consumerGroup;
         return this;
     }
 
-    /**
-     *  消费者单序消息处理器设置
+    /** 消费者单序消息处理器设置
+     * @Description:
+     * @date 2020-11-10
+     * @Param orderlyProcessor:
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
      */
     public RMConsumer orderlyProcessor(OrderlyProcessor orderlyProcessor) {
         this.orderlyProcessor = orderlyProcessor;
@@ -114,7 +120,10 @@ public class RMConsumer extends AbstractMQEndpoint {
     }
 
     /**
-     *  消费者并发消息处理器设置
+     * @Description: 消费者并发消息处理器设置
+     * @date 2020-11-10
+     * @Param concurrentlyProcessor:
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
      */
     public RMConsumer concurrentlyProcessor(ConcurrentlyProcessor concurrentlyProcessor) {
         this.concurrentlyProcessor = concurrentlyProcessor;
@@ -123,7 +132,10 @@ public class RMConsumer extends AbstractMQEndpoint {
     }
 
     /**
-     *  消费者消息类型设置
+     * @Description: 消费者消息类型设置
+     * @date 2020-11-10
+     * @Param messageModel:
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
      */
     public RMConsumer messageModel(MessageModel messageModel) {
         this.messageModel = messageModel;
