@@ -7,7 +7,7 @@
     <groupId>io.github.zxgangandy</groupId>
     <artifactId>rocketmq-wrapper</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <name>rocketmq-wrapper</name>
 
     <description>https://github.com/zxgangandy/rocketmq-wrapper</description>
