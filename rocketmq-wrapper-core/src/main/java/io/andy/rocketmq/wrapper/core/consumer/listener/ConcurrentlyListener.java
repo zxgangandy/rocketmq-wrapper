@@ -62,7 +62,7 @@ public class ConcurrentlyListener implements MessageListenerConcurrently {
                 return messageProcessor.process(str);
             } else {
                 Object message = messageConverter.fromMessageBody(msg.getBody(), messageBodyClazz);
-                log.debug("msgId={}, 消费者接收到消息, message={}", msgId, message);
+                log.debug("msgId={}, 消费者接收到并发消息, message={}", msgId, message);
 
                 return messageProcessor.process(message);
             }

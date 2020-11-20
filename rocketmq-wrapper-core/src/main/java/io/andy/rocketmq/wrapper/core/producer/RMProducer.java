@@ -3,7 +3,7 @@ package io.andy.rocketmq.wrapper.core.producer;
 import io.andy.rocketmq.wrapper.core.AbstractMQEndpoint;
 import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import io.andy.rocketmq.wrapper.core.exception.MessageSendException;
-import io.andy.rocketmq.wrapper.core.producer.listener.AbstractTransactionListener;
+import io.andy.rocketmq.wrapper.core.producer.listener.MQTxListener;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.andy.rocketmq.wrapper.core.constant.Constants.MSG_BODY_CLASS;
+import static io.andy.rocketmq.wrapper.core.utils.MQUtils.convert;
 
 
 @Slf4j
@@ -52,7 +53,7 @@ public class RMProducer  extends AbstractMQEndpoint {
 
     private ExecutorService             checkExecutorService;
     private DefaultMQProducer           producer;
-    private AbstractTransactionListener transactionListener;
+    private MQTxListener                mqTxListener;
     private MessageQueueSelector        messageQueueSelector = new SelectMessageQueueByHash();
 
     /**
@@ -112,11 +113,11 @@ public class RMProducer  extends AbstractMQEndpoint {
     /**
      * @Description: 设置事务消息的监听器
      * @date 2020-10-27
-     * @Param transactionListener:
+     * @Param txListener:
      * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
-    public RMProducer transactionListener(AbstractTransactionListener transactionListener) {
-        this.transactionListener = transactionListener;
+    public RMProducer txListener(MQTxListener txListener) {
+        this.mqTxListener = txListener;
 
         return this;
     }
@@ -249,7 +250,7 @@ public class RMProducer  extends AbstractMQEndpoint {
      * @Param messageQueueSelector:
      * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
      */
-    public RMProducer messageQueueSelector(MessageQueueSelector messageQueueSelector) {
+    public RMProducer messageQueueSelector(QueueSelector messageQueueSelector) {
         this.messageQueueSelector = messageQueueSelector;
         return this;
     }
@@ -719,7 +720,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         producer.setUnitName(unitName);
         producer.setSendMsgTimeout(sendMsgTimeout);
 
-        if (transactionListener != null) {
+        if (mqTxListener != null) {
             initTransactionEnv();
         }
 
@@ -729,8 +730,7 @@ public class RMProducer  extends AbstractMQEndpoint {
     }
 
     private void initTransactionEnv() {
-        transactionListener.setMessageConverter(messageConverter);
-        ((TransactionMQProducer)producer).setTransactionListener(transactionListener);
+        ((TransactionMQProducer)producer).setTransactionListener(convert(mqTxListener, messageConverter));
 
         // 初始化回查线程池
         if (checkExecutorService == null) {

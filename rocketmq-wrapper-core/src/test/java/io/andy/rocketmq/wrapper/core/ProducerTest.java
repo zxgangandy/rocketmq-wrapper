@@ -1,6 +1,8 @@
 package io.andy.rocketmq.wrapper.core;
 
+import io.andy.rocketmq.wrapper.core.producer.LocalTxState;
 import io.andy.rocketmq.wrapper.core.producer.RMProducer;
+import io.andy.rocketmq.wrapper.core.producer.listener.MQTxListener;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.junit.Before;
@@ -15,7 +17,17 @@ public class ProducerTest {
                 .producerGroup("producer-test")
                 .nameSrvAddr("127.0.0.1:9876")
                 .retryTimes(3)
-                .transactionListener(new TxListener())
+                .txListener(new MQTxListener() {
+                    @Override
+                    public LocalTxState executeTransaction(Object req) {
+                        return LocalTxState.COMMIT;
+                    }
+
+                    @Override
+                    public LocalTxState checkTransaction(Object body) {
+                        return LocalTxState.COMMIT;
+                    }
+                })
                 .start();
     }
 

@@ -10,10 +10,12 @@ import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
 import java.util.Objects;
+
+import static org.apache.rocketmq.common.consumer.ConsumeFromWhere.*;
+import static org.apache.rocketmq.common.protocol.heartbeat.MessageModel.BROADCASTING;
+import static org.apache.rocketmq.common.protocol.heartbeat.MessageModel.CLUSTERING;
 
 /**
  *
@@ -217,8 +219,32 @@ public class RMConsumer extends AbstractMQEndpoint {
         Objects.requireNonNull(nameSrvAddr);
 
         pushConsumer.setNamesrvAddr(nameSrvAddr);
-        pushConsumer.setConsumeFromWhere(consumeFromWhere);
-        pushConsumer.setMessageModel(messageModel);
+
+
+        switch (consumeFromWhere) {
+            case CONSUME_FROM_FIRST_OFFSET:
+                pushConsumer.setConsumeFromWhere(CONSUME_FROM_FIRST_OFFSET);
+                break;
+            case CONSUME_FROM_LAST_OFFSET:
+                pushConsumer.setConsumeFromWhere(CONSUME_FROM_LAST_OFFSET);
+                break;
+            case CONSUME_FROM_TIMESTAMP:
+                pushConsumer.setConsumeFromWhere(CONSUME_FROM_TIMESTAMP);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid consumeFromWhere");
+        }
+
+        switch (messageModel) {
+            case BROADCASTING:
+                pushConsumer.setMessageModel(BROADCASTING);
+                break;
+            case CLUSTERING:
+                pushConsumer.setMessageModel(CLUSTERING);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid messageModel");
+        }
 
         final MessageConverter messageConverter = getRequiredMessageConverter();
 
