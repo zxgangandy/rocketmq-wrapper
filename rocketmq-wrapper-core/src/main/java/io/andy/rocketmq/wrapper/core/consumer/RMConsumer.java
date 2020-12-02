@@ -10,7 +10,11 @@ import io.andy.rocketmq.wrapper.core.converter.MessageConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.trace.AsyncTraceDispatcher;
+import org.apache.rocketmq.client.trace.TraceDispatcher;
+import org.apache.rocketmq.client.trace.hook.ConsumeMessageTraceHookImpl;
 
+import java.lang.reflect.Field;
 import java.util.Objects;
 
 import static org.apache.rocketmq.common.consumer.ConsumeFromWhere.*;
@@ -211,7 +215,7 @@ public class RMConsumer extends AbstractMQEndpoint {
     }
 
     private void init() {
-        pushConsumer = new DefaultMQPushConsumer(consumerGroup, enableMsgTrace, customizedTraceTopic);
+        pushConsumer = new DefaultMQPushConsumer();
     }
 
     private void startConsumer() {
@@ -219,6 +223,7 @@ public class RMConsumer extends AbstractMQEndpoint {
         Objects.requireNonNull(nameSrvAddr);
 
         pushConsumer.setNamesrvAddr(nameSrvAddr);
+        pushConsumer.setConsumerGroup(consumerGroup);
 
 
         switch (consumeFromWhere) {
@@ -258,6 +263,10 @@ public class RMConsumer extends AbstractMQEndpoint {
             throw new IllegalStateException("Consumer message listener not initialized yet!!");
         }
 
+        if (enableMsgTrace) {
+            enableMsgTrace();
+        }
+
         try {
             pushConsumer.start();
         } catch (MQClientException e) {
@@ -266,5 +275,21 @@ public class RMConsumer extends AbstractMQEndpoint {
         }
 
         log.info("[消息消费者]=>RMConsumer加载完成!");
+    }
+
+    private void enableMsgTrace() {
+        try {
+            AsyncTraceDispatcher dispatcher = new AsyncTraceDispatcher(consumerGroup,
+                    TraceDispatcher.Type.CONSUME, customizedTraceTopic, null);
+            dispatcher.setHostConsumer(pushConsumer.getDefaultMQPushConsumerImpl());
+            Class<DefaultMQPushConsumer> pushConsumerClass = (Class<DefaultMQPushConsumer>) pushConsumer.getClass();
+            Field traceDispatcherField = pushConsumerClass.getDeclaredField("traceDispatcher");
+            traceDispatcherField.setAccessible(true);
+            traceDispatcherField.set(pushConsumer, dispatcher);
+            pushConsumer.getDefaultMQPushConsumerImpl().registerConsumeMessageHook(
+                    new ConsumeMessageTraceHookImpl(dispatcher));
+        } catch (Throwable e) {
+            log.error("system mqtrace hook init failed ,maybe can't send msg trace data");
+        }
     }
 }
