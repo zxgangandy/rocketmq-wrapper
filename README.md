@@ -105,3 +105,12 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 ### 自定义消息序列化工具
 
 - 用户也可以根据自己的喜好和业务要求定制自己的消息序列化工具，只需要实现MessageConverter接口
+
+
+### 消息幂等
+
+### 向多个集群发送消息
+
+### 消息动态topic消费
+
+### 注意事项
