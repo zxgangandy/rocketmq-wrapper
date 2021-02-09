@@ -79,6 +79,11 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
                   e.printStackTrace();
               }
           }
+          
+      //顺序消息
+      
+      
+      //顺序事务消息
   
   ```
   
