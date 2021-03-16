@@ -87,9 +87,18 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
           }
           
       //顺序消息
-      
-      
-      //顺序事务消息
+      @Test
+      public void sendOrderlyMsg() {
+          try {
+  
+              for(int i=0; i<100; i++) {
+                  SendResult sendResult = producer.sendOrderly("test", new MessageBody().setContent("c"), "d");
+                  System.out.println("sendTxMsg, sendResult=" + sendResult);
+              }
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+      }    
   
   ```
 
