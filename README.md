@@ -1,29 +1,35 @@
 # rocketmq-wrapper
 
-[![AUR](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://github.com/zxgangandy/pigeon-rpc/blob/master/LICENSE)
+[![AUR](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://github.com/zxgangandy/rocketmq-wrapper/blob/master/LICENSE)
 [![](https://img.shields.io/badge/Author-zxgangandy-orange.svg)](https://github.com/zxgangandy/pigeon-rpc)
-[![](https://img.shields.io/badge/version-1.1.1-brightgreen.svg)](https://github.com/zxgangandy/pigeon-rpc)
+[![](https://img.shields.io/badge/version-1.1.2-brightgreen.svg)](https://github.com/zxgangandy/rocketmq-wrapper)
 
 ## 简介
-Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消息和事务消息的发送和处理。Rocketmq-wrapper能大大方便我们使用rocketmq client来来构建应用程序，而忽略一些细节上的事件。
+Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消息和事务消息的发送和处理。Rocketmq-wrapper能大大方便我们使用rocketmq client来来构建应用程序，而忽略一些细节上的事情。
 
 - 支持同步消息发送
 - 支持异步消息发送
 - 支持事务消息发送
+- 支持顺序消息发送
+- 支持rocketmq常用配置
+- 支持自定义消息序列化方式
+- 支持动态设置监听topic
+- 支持多生产者
+- 支持多消费者
 
 ## 使用
   ### 引入library：
-  
+
   ``` xml
   <dependency>
     <groupId>io.github.zxgangandy</groupId>
     <artifactId>rocketmq-wrapper-core</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
   </dependency>
   ```
-     
+
   ### 消息生产者例子：
-  
+
 
   ``` java
   private RMProducer producer;
@@ -86,11 +92,11 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
       //顺序事务消息
   
   ```
-  
+
 - 事务消息需要实现TransactionListener接口，在使用rocketmq-wrapper的时候只需要继承AbstractTransactionListener即可；
   
 ### 消息发送端例子
-  
+
   ``` java
   RMWrapper.with(RMConsumer.class)
       .consumerGroup("consumer-test")
@@ -111,11 +117,10 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 
 - 用户也可以根据自己的喜好和业务要求定制自己的消息序列化工具，只需要实现MessageConverter接口
 
-
 ### 消息幂等
 
-### 向多个集群发送消息
+### 向多个集群发送消息（多生产者）
 
 ### 消息动态topic消费
 
-### 注意事项
+### 多消费者
