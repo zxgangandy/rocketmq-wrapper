@@ -38,7 +38,15 @@ import static io.andy.rocketmq.wrapper.core.utils.MQUtils.convert;
 public class RMProducer  extends AbstractMQEndpoint {
     private static final String         EMPTY = StringUtils.EMPTY;
     private static final int            DEFAULT_SEND_MSG_TIMEOUT = 10000;
+    /**
+     * <p>Maximum number of retry to perform internally before claiming sending failure in synchronous mode. </p>
+     * This may potentially cause message duplication which is up to application developers to resolve.
+     */
     private int                         retryTimes = 2;
+    /**
+     * Number of queues to create per default topic.
+     */
+    private int                         defaultTopicQueueNums = 4;
     private int                         sendMsgTimeout = DEFAULT_SEND_MSG_TIMEOUT;
 
     private AtomicBoolean               started = new AtomicBoolean(false);
@@ -208,6 +216,17 @@ public class RMProducer  extends AbstractMQEndpoint {
      */
     public RMProducer retryTimes(int retryTimes) {
         this.retryTimes = retryTimes;
+        return this;
+    }
+
+    /**
+     * @Description: 设置每个topic的默认queue的创建数量
+     * @date 3/16/21
+     * @Param defaultTopicQueueNums:
+     * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
+     */
+    public RMProducer defaultTopicQueueNums(int defaultTopicQueueNums) {
+        this.defaultTopicQueueNums = defaultTopicQueueNums;
         return this;
     }
 
@@ -717,6 +736,7 @@ public class RMProducer  extends AbstractMQEndpoint {
         producer.setNamesrvAddr(nameSrvAddr);
         producer.setRetryTimesWhenSendFailed(retryTimes);
         producer.setRetryTimesWhenSendAsyncFailed(retryTimes);
+        producer.setDefaultTopicQueueNums(defaultTopicQueueNums);
         producer.setUnitName(unitName);
         producer.setSendMsgTimeout(sendMsgTimeout);
 
