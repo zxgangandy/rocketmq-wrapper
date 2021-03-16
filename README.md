@@ -146,8 +146,13 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 
 ### 消息幂等
 
+- 可通过设置消息keys实现
+
 ### 向多个集群发送消息（多生产者）
+
+- 为每个producer设置不同的unitName或者instanceName
 
 ### 消息动态topic消费
 
-### 多消费者
+- 多次调用subscribe方法
+
