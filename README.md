@@ -104,7 +104,7 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 
 - 事务消息需要实现TransactionListener接口，在使用rocketmq-wrapper的时候只需要继承AbstractTransactionListener即可；
   
-### 消息发送端例子
+### 消费者例子
 
   ``` java
   RMWrapper.with(RMConsumer.class)
@@ -119,6 +119,24 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
           }
       })
       .start();
+      
+    @Test
+    public void orderlyProcessor() throws InterruptedException {
+        RMWrapper.with(RMConsumer.class)
+                .consumerGroup("consumer-test")
+                .nameSrvAddr("127.0.0.1:9876")
+                .subscribe("test")
+                .orderlyProcessor(new OrderlyProcessor<MessageExt>() {
+                    @Override
+                    public ConsumeOrderlyStatus process(MessageExt messageBody) {
+                        System.out.println("OrderlyProcessor, messageBody=" + messageBody);
+                        return ConsumeOrderlyStatus.SUCCESS;
+                    }
+                })
+                .start();
+
+        Thread.sleep(50000000);
+    }  
     
   ```
 

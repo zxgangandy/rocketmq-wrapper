@@ -15,7 +15,7 @@ public class ConsumerTest {
         RMWrapper.with(RMConsumer.class)
                 .consumerGroup("consumer-test")
                 .nameSrvAddr("127.0.0.1:9876")
-                .subscribe("test")
+                .subscribe("test1")
                 .concurrentlyProcessor((messageBody) -> {
                     System.out.println("concurrentlyProcessor, messageBody=" + messageBody);
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -40,7 +40,7 @@ public class ConsumerTest {
                 })
                 .start();
 
-        Thread.sleep(50000);
+        Thread.sleep(50000000);
     }
 
 }

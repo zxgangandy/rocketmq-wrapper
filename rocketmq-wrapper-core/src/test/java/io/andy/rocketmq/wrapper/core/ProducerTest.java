@@ -16,6 +16,7 @@ public class ProducerTest {
         producer = RMWrapper.with(RMProducer.class)
                 .producerGroup("producer-test")
                 .nameSrvAddr("127.0.0.1:9876")
+                .defaultTopicQueueNums(1)
                 .retryTimes(3)
                 .txListener(new MQTxListener() {
                     @Override
@@ -34,7 +35,8 @@ public class ProducerTest {
     @Test
     public void sendMsgSync() {
         try {
-            SendResult sendResult = producer.sendSync("test", new MessageBody().setContent("a"));
+
+            SendResult sendResult = producer.sendSync("test1", new MessageBody().setContent("a"));
             System.out.println("sendMsgSync, sendResult=" +sendResult);
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,6 +67,19 @@ public class ProducerTest {
         try {
             SendResult sendResult = producer.sendTransactional("test", new MessageBody().setContent("c"), "d");
             System.out.println("sendTxMsg, sendResult=" +sendResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void sendOrderlyMsg() {
+        try {
+
+            for(int i=0; i<100; i++) {
+                SendResult sendResult = producer.sendOrderly("test", new MessageBody().setContent("c"), "d");
+                System.out.println("sendTxMsg, sendResult=" + sendResult);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
