@@ -32,6 +32,11 @@ import static org.apache.rocketmq.common.protocol.heartbeat.MessageModel.CLUSTER
 public class RMConsumer extends AbstractMQEndpoint {
     private boolean                        enableMsgTrace;
 
+    /**
+     * Suspending pulling time for cases requiring slow pulling like flow-control scenario.
+     */
+    private long                           suspendCurrentQueueTimeMillis = 10000;
+
     private String                         nameSrvAddr;
     private String                         consumerGroup;
 
@@ -170,6 +175,19 @@ public class RMConsumer extends AbstractMQEndpoint {
         return this;
     }
 
+    /**
+     * @Description: 设置重新消费的间隔时间
+     * @date 2020-11-04
+     * @Param consumeFromWhere:
+     * @return: io.andy.rocketmq.wrapper.core.consumer.RMConsumer
+     */
+    public RMConsumer suspendCurrentQueueTimeMillis(long suspendCurrentQueueTimeMillis) {
+        this.suspendCurrentQueueTimeMillis = suspendCurrentQueueTimeMillis;
+
+        return this;
+    }
+
+
 
     /**
      * Subscribe a topic to consuming subscription.
@@ -224,7 +242,7 @@ public class RMConsumer extends AbstractMQEndpoint {
 
         pushConsumer.setNamesrvAddr(nameSrvAddr);
         pushConsumer.setConsumerGroup(consumerGroup);
-
+        pushConsumer.setSuspendCurrentQueueTimeMillis(suspendCurrentQueueTimeMillis);
 
         switch (consumeFromWhere) {
             case CONSUME_FROM_FIRST_OFFSET:

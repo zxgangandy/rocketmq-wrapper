@@ -76,7 +76,7 @@ public class ProducerTest {
     public void sendOrderlyMsg() {
         try {
 
-            for(int i=0; i<100; i++) {
+            for(int i=0; i<1; i++) {
                 SendResult sendResult = producer.sendOrderly("test", new MessageBody().setContent("c"), "d");
                 System.out.println("sendTxMsg, sendResult=" + sendResult);
             }
