@@ -207,9 +207,8 @@ public class RMProducer  extends AbstractMQEndpoint {
         return this;
     }
 
-
     /***
-     * @Description: 生产者发送同步/异步消息重试次数设置
+     * @Description: 生产者发送同步/异步消息重试次数设置（对顺序消息不起作用）
      * @date 2020-10-27
      * @Param retryTimes: 重试次数
      * @return: io.andy.rocketmq.wrapper.core.producer.RMProducer
@@ -793,7 +792,12 @@ public class RMProducer  extends AbstractMQEndpoint {
         enableMsgTrace(enableMsgTrace, enabledAcl, customizedTraceTopic);
     }
 
-
+    /**
+     * @Description: enable message trace
+     * @date 3/24/21
+     * @Param null:
+     * @return: null
+     */
     private void enableMsgTrace(boolean enableMsgTrace, boolean enabledAcl, String customizedTraceTopic) {
         if (enableMsgTrace) {
             try {
