@@ -156,3 +156,9 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 
 - 多次调用subscribe方法
 
+### 注意事项
+
+- 单机（同一台服务器）只能创建一个消费者组，不管是集群消费还是广播消费（详见：MQClientInstance#registerConsumer）
+- 单机如果多个消费同一个生产者发送的topic消息，需要创建不同的消费者组消费相应topic的消息
+
+
