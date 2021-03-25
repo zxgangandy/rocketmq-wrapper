@@ -107,36 +107,56 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 ### 消费者例子
 
   ``` java
-  RMWrapper.with(RMConsumer.class)
-      .consumerGroup("consumer-test")
-      .nameSrvAddr("127.0.0.1:9876")
-      .topic("test")
-      .concurrentlyMessageProcessor(new ConcurrentlyMessageProcessor<MessageBody>() {
-          @Override
-          public ConsumeConcurrentlyStatus process(MessageExt rawMsg, MessageBody messageBody) {
-             System.out.println("messageBody=" + messageBody);
-             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-          }
-      })
-      .start();
-      
-    @Test
-    public void orderlyProcessor() throws InterruptedException {
-        RMWrapper.with(RMConsumer.class)
-                .consumerGroup("consumer-test")
-                .nameSrvAddr("127.0.0.1:9876")
-                .subscribe("test")
-                .orderlyProcessor(new OrderlyProcessor<MessageExt>() {
-                    @Override
-                    public ConsumeOrderlyStatus process(MessageExt messageBody) {
-                        System.out.println("OrderlyProcessor, messageBody=" + messageBody);
-                        return ConsumeOrderlyStatus.SUCCESS;
-                    }
-                })
-                .start();
-
-        Thread.sleep(50000000);
-    }  
+  @Test
+      public void concurrentlyProcessor() throws InterruptedException {
+          RMWrapper.with(RMConsumer.class)
+                  .consumerGroup("consumer-test")
+                  .nameSrvAddr("127.0.0.1:9876")
+                  .subscribe("test1")
+                  .concurrentlyProcessor((messageBody) -> {
+                      System.out.println("concurrentlyProcessor, messageBody=" + messageBody);
+                      return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                  })
+                  .start();
+  
+          Thread.sleep(50000);
+      }
+  
+      @Test
+      public void orderlyRawProcessor() throws InterruptedException {
+          RMWrapper.with(RMConsumer.class)
+                  .consumerGroup("consumer-test")
+                  .nameSrvAddr("127.0.0.1:9876")
+                  .subscribe("test")
+                  .orderlyProcessor(new OrderlyProcessor<MessageExt>() {
+                      @Override
+                      public ConsumeOrderlyStatus process(MessageExt messageBody) {
+                          System.out.println("OrderlyProcessor, messageBody=" + messageBody);
+                          return ConsumeOrderlyStatus.SUCCESS;
+                      }
+                  })
+                  .start();
+  
+          Thread.sleep(50000000);
+      }
+  
+      @Test
+      public void orderlyProcessor() throws InterruptedException {
+          RMWrapper.with(RMConsumer.class)
+                  .consumerGroup("consumer-test")
+                  .nameSrvAddr("127.0.0.1:9876")
+                  .subscribe("test")
+                  .orderlyProcessor(new OrderlyProcessor<MessageBody>() {
+                      @Override
+                      public ConsumeOrderlyStatus process(MessageBody messageBody) {
+                          System.out.println("OrderlyProcessor, messageBody=" + messageBody);
+                          return ConsumeOrderlyStatus.SUCCESS;
+                      }
+                  })
+                  .start();
+  
+          Thread.sleep(50000000);
+      }
     
   ```
 
@@ -154,7 +174,7 @@ Rocketmq-wrapper是对rocketmq client library的二次封装，支持普通消�
 
 ### 消息动态topic消费
 
-- 多次调用subscribe方法
+- 创建多个consumer，每个consumer进行subscribe不同的topic
 
 ### 注意事项
 
